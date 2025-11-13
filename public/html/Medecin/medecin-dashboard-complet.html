@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Médecin - Suivi Greffe Rénale</title>
+    <script src="/js/sidebar.js" defer></script>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f6fa;
+    color: #333;
+}
+
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%);
+    color: white;
+    padding: 20px;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logo-icon {
+    font-size: 32px;
+}
+
+.logo-text h2 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.logo-text p {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.nav-menu {
+    list-style: none;
+}
+
+.nav-item {
+    margin-bottom: 5px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.nav-link .icon {
+    font-size: 18px;
+    width: 20px;
+}
+
+.nav-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 15px 0;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    padding: 0;
+}
+
+/* Header */
+.header {
+    background: white;
+    padding: 20px 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-left h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.header-left p {
+    font-size: 14px;
+    color: #666;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.notification-icon {
+    position: relative;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.user-info h3 {
+    font-size: 14px;
+    color: #333;
+}
+
+.user-info p {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Content Area */
+.content {
+    padding: 20px 30px;
+}
+
+/* Page visibility */
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-info h3 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.stat-info p {
+    font-size: 13px;
+    color: #666;
+}
+
+.stat-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+}
+
+.stat-card.purple .stat-icon {
+    background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+}
+
+.stat-card.red .stat-icon {
+    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+}
+
+.stat-card.blue .stat-icon {
+    background: linear-gradient(135deg, #3498db 0%, #2ecc71 100%);
+}
+
+.stat-card.orange .stat-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Cards */
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.card-header h2 {
+    font-size: 18px;
+    color: #333;
+}
+
+.btn-link {
+    color: #8e44ad;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Tables */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+
+.table th {
+    background: #fafafa;
+    color: #555;
+    font-weight: 600;
+}
+
+/* Search Bar */
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.search-input:focus {
+    border-color: #8e44ad;
+}
+
+/* Patient Cards */
+.patient-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.patient-item:hover {
+    background: #f0f0f0;
+}
+
+.patient-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.patient-status {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.status-stable {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-critical {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Appointments */
+.appointment-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border-left: 4px solid #8e44ad;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.appointment-time {
+    text-align: center;
+    min-width: 55px;
+}
+
+.appointment-time .time {
+    font-size: 16px;
+    font-weight: bold;
+    color: #8e44ad;
+}
+
+.appointment-time .duration {
+    font-size: 11px;
+    color: #666;
+}
+
+.appointment-details h4 {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 3px;
+}
+
+.appointment-details p {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Alerts */
+.alert {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    border-left: 4px solid #e74c3c;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    border-left: 4px solid #17a2b8;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.action-btn {
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.action-btn:hover {
+    border-color: #8e44ad;
+    background: #f8f9fa;
+}
+
+.action-btn .icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.action-btn p {
+    font-size: 13px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    color: #555;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #8e44ad;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tab {
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.tab.active,
+.tab:hover {
+    border-color: #8e44ad;
+    background: #f8f9fa;
+    color: #8e44ad;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 400px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.modal-header h3 {
+    font-size: 18px;
+}
+
+.modal-close {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Chat */
+.chat-window {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+    overflow: hidden;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.chat-message {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.chat-message .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.chat-message-content {
+    background: white;
+    border-radius: 12px;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: #333;
+}
+
+.chat-input-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
+    font-size: 14px;
+}
+
+.chat-send {
+    background: linear-gradient(135deg, #8e44ad 0%, #c0392b 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .two-column {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+    </style>
+</head>
+
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div data-sidebar="medecin" data-active="dashboard"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 id="pageTitle">Bonjour, Dr. Martin</h1>
+                    <p id="pageSubtitle">Voici un aperçu de votre journée</p>
+                </div>
+                <div class="header-right">
+                    <div class="notification-icon">
+                        🔔
+                        <span class="notification-badge">5</span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar">DM</div>
+                        <div class="user-info">
+                            <h3>Dr. Martin</h3>
+                            <p>Néphrologue</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content">
+
+                <!-- PAGE 1: DASHBOARD -->
+                <div id="page-dashboard" class="page active">
+                    <div class="stats-grid">
+                        <div class="stat-card purple">
+                            <div class="stat-info">
+                                <h3 id="totalPatients">42</h3>
+                                <p>Patients actifs</p>
+                            </div>
+                            <div class="stat-icon">👥</div>
+                        </div>
+                        <div class="stat-card blue">
+                            <div class="stat-info">
+                                <h3 id="totalRdvToday">8</h3>
+                                <p>RDV aujourd'hui</p>
+                            </div>
+                            <div class="stat-icon">📅</div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="stat-info">
+                                <h3>12</h3>
+                                <p>Messages non lus</p>
+                            </div>
+                            <div class="stat-icon">💬</div>
+                        </div>
+                        <div class="stat-card orange">
+                            <div class="stat-info">
+                                <h3>3</h3>
+                                <p>Alertes en attente</p>
+                            </div>
+                            <div class="stat-icon">⚠️</div>
+                        </div>
+                    </div>
+
+                    <div class="two-column">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Patients récents</h2>
+                                <a href="#" class="btn-link" onclick="navigateTo('patients')">Voir tout →</a>
+                            </div>
+
+                            <div id="recentPatientsList">
+                                <div class="patient-item" onclick="viewPatient('Sophie Martin')">
+                                    <div class="patient-avatar">SM</div>
+                                    <div class="patient-info">
+                                        <h4>Sophie Martin</h4>
+                                        <p>Greffe il y a 6 mois • Dernière visite: 15/09/2025</p>
+                                    </div>
+                                    <span class="patient-status status-stable">Stable</span>
+                                </div>
+
+                                <div class="patient-item" onclick="viewPatient('Jean Dupont')">
+                                    <div class="patient-avatar">JD</div>
+                                    <div class="patient-info">
+                                        <h4>Jean Dupont</h4>
+                                        <p>Greffe il y a 2 ans • Dernière visite: 20/09/2025</p>
+                                    </div>
+                                    <span class="patient-status status-stable">Stable</span>
+                                </div>
+
+                                <div class="patient-item" onclick="viewPatient('Sophie Bernard')">
+                                    <div class="patient-avatar">SB</div>
+                                    <div class="patient-info">
+                                        <h4>Sophie Bernard</h4>
+                                        <p>Greffe il y a 3 mois • Dernière visite: 10/10/2025</p>
+                                    </div>
+                                    <span class="patient-status status-attention">À surveiller</span>
+                                </div>
+
+                                <div class="patient-item" onclick="viewPatient('Pierre Moreau')">
+                                    <div class="patient-avatar">PM</div>
+                                    <div class="patient-info">
+                                        <h4>Pierre Moreau</h4>
+                                        <p>Greffe il y a 1 an • Dernière visite: 05/10/2025</p>
+                                    </div>
+                                    <span class="patient-status status-urgent">Urgent</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="card" style="margin-bottom: 15px;">
+                                <div class="card-header">
+                                    <h2>RDV aujourd'hui</h2>
+                                    <a href="#" class="btn-link" onclick="navigateTo('rdv')">Planning →</a>
+                                </div>
+
+                                <div id="todayAppointments">
+                                    <div class="appointment-item">
+                                        <div class="appointment-time">
+                                            <div class="time">09:00</div>
+                                            <div class="duration">30 min</div>
+                                        </div>
+                                        <div class="appointment-details">
+                                            <h4>Sophie Martin</h4>
+                                            <p>Consultation de suivi post-greffe</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="appointment-item">
+                                        <div class="appointment-time">
+                                            <div class="time">10:30</div>
+                                            <div class="duration">45 min</div>
+                                        </div>
+                                        <div class="appointment-details">
+                                            <h4>Pierre Moreau</h4>
+                                            <p>Contrôle urgence - Fièvre</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="appointment-item">
+                                        <div class="appointment-time">
+                                            <div class="time">14:00</div>
+                                            <div class="duration">30 min</div>
+                                        </div>
+                                        <div class="appointment-details">
+                                            <h4>Jean Dupont</h4>
+                                            <p>Bilan sanguin de contrôle</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Alertes & Notifications</h2>
+                                </div>
+
+                                <div class="alert alert-warning">
+                                    <span class="alert-icon">⚠️</span>
+                                    <div class="alert-content">
+                                        <h4>Valeurs anormales</h4>
+                                        <p>Pierre Moreau - Créatinine élevée</p>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <span class="alert-icon">📋</span>
+                                    <div class="alert-content">
+                                        <h4>Ordonnance à renouveler</h4>
+                                        <p>Sophie Bernard - Immunosuppresseurs</p>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <span class="alert-icon">💬</span>
+                                    <div class="alert-content">
+                                        <h4>Nouveaux messages</h4>
+                                        <p>12 messages patients non lus</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Actions rapides</h2>
+                        </div>
+                        <div class="quick-actions">
+                            <div class="action-btn" onclick="navigateTo('gestion')">
+                                <div class="icon">➕</div>
+                                <p>Nouveau patient</p>
+                            </div>
+                            <div class="action-btn" onclick="navigateTo('rdv')">
+                                <div class="icon">📅</div>
+                                <p>Planifier RDV</p>
+                            </div>
+                            <div class="action-btn" onclick="navigateTo('ordonnances')">
+                                <div class="icon">💊</div>
+                                <p>Créer ordonnance</p>
+                            </div>
+                            <div class="action-btn" onclick="navigateTo('suivi')">
+                                <div class="icon">📊</div>
+                                <p>Voir données</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 2: LISTE DES PATIENTS -->
+                <div id="page-patients" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Liste des Patients</h2>
+                        </div>
+
+                        <div class="search-bar">
+                            <input type="text" class="search-input" placeholder="Rechercher un patient...">
+                            <button class="btn-primary">🔍 Rechercher</button>
+                        </div>
+
+                        <div class="tabs">
+                            <button class="tab active" onclick="filterPatients('all')">Tous (42)</button>
+                            <button class="tab" onclick="filterPatients('urgent')">Urgents (3)</button>
+                            <button class="tab" onclick="filterPatients('attention')">À surveiller (8)</button>
+                            <button class="tab" onclick="filterPatients('stable')">Stables (31)</button>
+                        </div>
+
+                        <div id="allPatientsList">
+                            <div class="patient-item" data-priority="urgent" onclick="viewPatient('Pierre Moreau')">
+                                <div class="patient-avatar">PM</div>
+                                <div class="patient-info">
+                                    <h4>Pierre Moreau</h4>
+                                    <p>Greffe: 05/10/2024 • Créatinine: 245 mg/L ⚠️</p>
+                                </div>
+                                <span class="patient-status status-urgent">Urgent</span>
+                            </div>
+
+                            <div class="patient-item" data-priority="attention" onclick="viewPatient('Sophie Bernard')">
+                                <div class="patient-avatar">SB</div>
+                                <div class="patient-info">
+                                    <h4>Sophie Bernard</h4>
+                                    <p>Greffe: 15/07/2025 • Tension: 145/90 mmHg</p>
+                                </div>
+                                <span class="patient-status status-attention">À surveiller</span>
+                            </div>
+
+                            <div class="patient-item" data-priority="stable" onclick="viewPatient('Sophie Martin')">
+                                <div class="patient-avatar">SM</div>
+                                <div class="patient-info">
+                                    <h4>Sophie Martin</h4>
+                                    <p>Greffe: 15/03/2025 • Tous les paramètres normaux</p>
+                                </div>
+                                <span class="patient-status status-stable">Stable</span>
+                            </div>
+
+                            <div class="patient-item" data-priority="stable" onclick="viewPatient('Jean Dupont')">
+                                <div class="patient-avatar">JD</div>
+                                <div class="patient-info">
+                                    <h4>Jean Dupont</h4>
+                                    <p>Greffe: 10/01/2024 • Évolution positive</p>
+                                </div>
+                                <span class="patient-status status-stable">Stable</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 3: GESTION DES PATIENTS -->
+                <div id="page-gestion" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Gestion des Patients</h2>
+                            <button class="btn-primary" onclick="openAddPatientModal()">+ Ajouter un patient</button>
+                        </div>
+
+                        <div class="search-bar">
+                            <input type="text" class="search-input" placeholder="Rechercher un patient à modifier...">
+                            <button class="btn-primary">🔍 Rechercher</button>
+                        </div>
+
+                        <div id="managePatientsList">
+                            <div class="patient-item" onclick="editPatient('Sophie Martin')">
+                                <div class="patient-avatar">SM</div>
+                                <div class="patient-info">
+                                    <h4>Sophie Martin</h4>
+                                    <p>sophie.martin@email.fr • 06 12 34 56 78</p>
+                                </div>
+                                <button class="btn-primary" style="width: auto; padding: 8px 16px;">✏️ Modifier</button>
+                            </div>
+
+                            <div class="patient-item" onclick="editPatient('Jean Dupont')">
+                                <div class="patient-avatar">JD</div>
+                                <div class="patient-info">
+                                    <h4>Jean Dupont</h4>
+                                    <p>jean.dupont@email.fr • 06 23 45 67 89</p>
+                                </div>
+                                <button class="btn-primary" style="width: auto; padding: 8px 16px;">✏️ Modifier</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 4: SUIVI DES DONNÉES -->
+                <div id="page-suivi" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Suivi des Données Patients</h2>
+                        </div>
+
+                        <div class="search-bar">
+                            <select id="patientSelect" class="search-input" onchange="loadPatientData()">
+                                <option value="">Sélectionner un patient...</option>
+                                <option value="Sophie Martin">Sophie Martin</option>
+                                <option value="Jean Dupont">Jean Dupont</option>
+                                <option value="Pierre Moreau">Pierre Moreau</option>
+                                <option value="Sophie Bernard">Sophie Bernard</option>
+                            </select>
+                            <button class="btn-primary" onclick="loadPatientData()">Charger les données</button>
+                        </div>
+
+                        <div class="tabs">
+                            <button class="tab active" onclick="showSuiviTab('constantes')">Constantes</button>
+                            <button class="tab" onclick="showSuiviTab('symptomes')">Symptômes</button>
+                            <button class="tab" onclick="showSuiviTab('traitements')">Traitements</button>
+                            <button class="tab" onclick="showSuiviTab('questionnaires')">Questionnaires</button>
+                        </div>
+
+                        <!-- Tab Constantes -->
+                        <div id="suivi-constantes" class="tab-content active">
+                            <div class="stats-grid">
+                                <div class="stat-card purple">
+                                    <div class="stat-info">
+                                        <h3 id="creatinine-value">165</h3>
+                                        <p>Créatinine (mg/L)</p>
+                                    </div>
+                                    <div class="stat-icon">📊</div>
+                                </div>
+                                <div class="stat-card blue">
+                                    <div class="stat-info">
+                                        <h3 id="tension-value">125/80</h3>
+                                        <p>Tension (mmHg)</p>
+                                    </div>
+                                    <div class="stat-icon">❤️</div>
+                                </div>
+                                <div class="stat-card green">
+                                    <div class="stat-info">
+                                        <h3 id="temperature-value">37.0°C</h3>
+                                        <p>Température</p>
+                                    </div>
+                                    <div class="stat-icon">🌡️</div>
+                                </div>
+                                <div class="stat-card orange">
+                                    <div class="stat-info">
+                                        <h3 id="poids-value">68 kg</h3>
+                                        <p>Poids</p>
+                                    </div>
+                                    <div class="stat-icon">⚖️</div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Évolution Créatinine (30 derniers jours)</h2>
+                                </div>
+                                <div class="chart-container">
+                                    <div class="chart-placeholder">
+                                        📈 Graphique d'évolution de la créatinine<br>
+                                        <small>Valeurs normales : 60-130 mg/L</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Évolution Tension Artérielle</h2>
+                                </div>
+                                <div class="chart-container">
+                                    <div class="chart-placeholder">
+                                        📊 Graphique de suivi tension systolique/diastolique
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Symptômes -->
+                        <div id="suivi-symptomes" class="tab-content">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Symptômes déclarés récents</h2>
+                                </div>
+                                <div id="symptomesData">
+                                    <p style="text-align: center; color: #666; padding: 40px;">Sélectionnez un patient
+                                        pour voir les symptômes</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Traitements -->
+                        <div id="suivi-traitements" class="tab-content">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Suivi de prise des traitements</h2>
+                                </div>
+                                <div id="traitementsData">
+                                    <p style="text-align: center; color: #666; padding: 40px;">Sélectionnez un patient
+                                        pour voir les traitements</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Questionnaires -->
+                        <div id="suivi-questionnaires" class="tab-content">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Questionnaires remplis</h2>
+                                </div>
+                                <div id="questionnairesData">
+                                    <p style="text-align: center; color: #666; padding: 40px;">Sélectionnez un patient
+                                        pour voir les questionnaires</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 5: PLANIFICATION RDV -->
+                <div id="page-rdv" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Planification des Rendez-vous</h2>
+                            <button class="btn-primary" onclick="openAddRdvModal()">+ Nouveau RDV</button>
+                        </div>
+
+                        <div class="tabs">
+                            <button class="tab active" onclick="showRdvTab('today')">Aujourd'hui</button>
+                            <button class="tab" onclick="showRdvTab('week')">Cette semaine</button>
+                            <button class="tab" onclick="showRdvTab('month')">Ce mois</button>
+                            <button class="tab" onclick="showRdvTab('history')">Historique</button>
+                        </div>
+
+                        <!-- Aujourd'hui -->
+                        <div id="rdv-today" class="tab-content active">
+                            <h3 style="margin: 20px 0 15px; color: #8e44ad;">Aujourd'hui - 15 octobre 2025</h3>
+                            <div id="rdvTodayList">
+                                <div class="appointment-item">
+                                    <div class="appointment-time">
+                                        <div class="time">09:00</div>
+                                        <div class="duration">30 min</div>
+                                    </div>
+                                    <div class="appointment-details">
+                                        <h4>Sophie Martin</h4>
+                                        <p>Consultation de suivi post-greffe • Cabinet 201</p>
+                                    </div>
+                                    <button class="btn-danger"
+                                        onclick="cancelRdv(this, 'Sophie Martin', '09:00')">Annuler</button>
+                                </div>
+
+                                <div class="appointment-item">
+                                    <div class="appointment-time">
+                                        <div class="time">10:30</div>
+                                        <div class="duration">45 min</div>
+                                    </div>
+                                    <div class="appointment-details">
+                                        <h4>Pierre Moreau</h4>
+                                        <p>Contrôle urgence - Fièvre • Cabinet 201</p>
+                                    </div>
+                                    <button class="btn-danger"
+                                        onclick="cancelRdv(this, 'Pierre Moreau', '10:30')">Annuler</button>
+                                </div>
+
+                                <div class="appointment-item">
+                                    <div class="appointment-time">
+                                        <div class="time">14:00</div>
+                                        <div class="duration">30 min</div>
+                                    </div>
+                                    <div class="appointment-details">
+                                        <h4>Jean Dupont</h4>
+                                        <p>Bilan sanguin de contrôle • Cabinet 201</p>
+                                    </div>
+                                    <button class="btn-danger"
+                                        onclick="cancelRdv(this, 'Jean Dupont', '14:00')">Annuler</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cette semaine -->
+                        <div id="rdv-week" class="tab-content">
+                            <h3 style="margin: 20px 0 15px; color: #8e44ad;">Cette semaine</h3>
+                            <div id="rdvWeekList">
+                                <div class="appointment-item">
+                                    <div class="appointment-time">
+                                        <div class="time">17 Oct</div>
+                                        <div class="duration">10:00</div>
+                                    </div>
+                                    <div class="appointment-details">
+                                        <h4>Sophie Bernard</h4>
+                                        <p>Consultation de suivi • 30 min</p>
+                                    </div>
+                                    <button class="btn-danger"
+                                        onclick="cancelRdv(this, 'Sophie Bernard', '17 Oct 10:00')">Annuler</button>
+                                </div>
+
+                                <div class="appointment-item">
+                                    <div class="appointment-time">
+                                        <div class="time">18 Oct</div>
+                                        <div class="duration">14:30</div>
+                                    </div>
+                                    <div class="appointment-details">
+                                        <h4>Marie Dubois</h4>
+                                        <p>Bilan post-greffe 6 mois • 45 min</p>
+                                    </div>
+                                    <button class="btn-danger"
+                                        onclick="cancelRdv(this, 'Marie Dubois', '18 Oct 14:30')">Annuler</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ce mois -->
+                        <div id="rdv-month" class="tab-content">
+                            <h3 style="margin: 20px 0 15px; color: #8e44ad;">Octobre 2025</h3>
+                            <div id="rdvMonthList">
+                                <p style="text-align: center; color: #666; padding: 20px;">
+                                    15 rendez-vous ce mois-ci<br><br>
+                                    📅 Consultez les onglets "Aujourd'hui" et "Cette semaine" pour plus de détails
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Historique -->
+                        <div id="rdv-history" class="tab-content">
+                            <h3 style="margin: 20px 0 15px; color: #8e44ad;">Rendez-vous passés</h3>
+                            <div id="rdvHistoryList">
+                                <div class="appointment-item" style="opacity: 0.7;">
+                                    <div class="appointment-time">
+                                        <div class="time">12 Oct</div>
+                                        <div class="duration">09:00</div>
+                                    </div>
+                                    <div class="appointment-details">
+                                        <h4>Sophie Martin ✓</h4>
+                                        <p>Consultation réalisée</p>
+                                    </div>
+                                </div>
+
+                                <div class="appointment-item" style="opacity: 0.7;">
+                                    <div class="appointment-time">
+                                        <div class="time">10 Oct</div>
+                                        <div class="duration">14:00</div>
+                                    </div>
+                                    <div class="appointment-details">
+                                        <h4>Jean Dupont ✓</h4>
+                                        <p>Bilan sanguin effectué</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 6: ORDONNANCES -->
+                <div id="page-ordonnances" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Gestion des Ordonnances</h2>
+                            <button class="btn-primary" onclick="openCreateOrdonnanceModal()">+ Créer une
+                                ordonnance</button>
+                        </div>
+
+                        <div class="search-bar">
+                            <input type="text" class="search-input" placeholder="Rechercher une ordonnance...">
+                            <button class="btn-primary">🔍 Rechercher</button>
+                        </div>
+
+                        <div id="ordonnancesList">
+                            <div class="patient-item">
+                                <div class="patient-avatar">SM</div>
+                                <div class="patient-info">
+                                    <h4>Ordonnance - Sophie Martin</h4>
+                                    <p>15/09/2025 • Advagraf 5mg, Certican 0.75mg • Durée: 3 mois</p>
+                                </div>
+                                <button class="btn-primary" style="width: auto; padding: 8px 16px;">📄 Voir</button>
+                            </div>
+
+                            <div class="patient-item">
+                                <div class="patient-avatar">PM</div>
+                                <div class="patient-info">
+                                    <h4>Ordonnance - Pierre Moreau</h4>
+                                    <p>05/10/2025 • Traitement immunosuppresseur • Durée: 6 mois</p>
+                                </div>
+                                <button class="btn-primary" style="width: auto; padding: 8px 16px;">📄 Voir</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 7: MESSAGERIE -->
+                <div id="page-messagerie" class="page">
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+                        <!-- Liste des conversations -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Messagerie Patients</h2>
+                            </div>
+
+                            <div class="tabs">
+                                <button class="tab active" onclick="filterMessages('unread')">Non lus (12)</button>
+                                <button class="tab" onclick="filterMessages('all')">Tous</button>
+                                <button class="tab" onclick="filterMessages('sent')">Envoyés</button>
+                            </div>
+
+                            <div id="messagesList">
+                                <div class="message-item unread" onclick="openChat('Sophie Martin', 'SM')">
+                                    <div class="message-avatar">SM</div>
+                                    <div class="message-content">
+                                        <div class="message-header">
+                                            <span class="message-sender">Sophie Martin</span>
+                                            <span class="message-time">Il y a 2h</span>
+                                        </div>
+                                        <div class="message-text">
+                                            Bonjour Docteur, j'ai ressenti des douleurs au niveau du greffon...
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="message-item unread" onclick="openChat('Pierre Moreau', 'PM')">
+                                    <div class="message-avatar">PM</div>
+                                    <div class="message-content">
+                                        <div class="message-header">
+                                            <span class="message-sender">Pierre Moreau</span>
+                                            <span class="message-time">Il y a 5h</span>
+                                        </div>
+                                        <div class="message-text">
+                                            J'ai de la fièvre depuis hier soir (38.5°C), dois-je venir ?
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="message-item" onclick="openChat('Jean Dupont', 'JD')">
+                                    <div class="message-avatar">JD</div>
+                                    <div class="message-content">
+                                        <div class="message-header">
+                                            <span class="message-sender">Jean Dupont</span>
+                                            <span class="message-time">Hier 14h30</span>
+                                        </div>
+                                        <div class="message-text">
+                                            Merci pour la consultation d'hier, je me sens beaucoup mieux.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fenêtre de chat -->
+                        <div class="card" style="padding: 0;">
+                            <div id="chatWindow" class="chat-window">
+                                <div class="chat-header">
+                                    <div class="chat-header-avatar" id="chatAvatarHeader">?</div>
+                                    <div class="chat-header-info">
+                                        <h3 id="chatPatientName">Sélectionnez une conversation</h3>
+                                        <p id="chatPatientStatus">Patient</p>
+                                    </div>
+                                </div>
+
+                                <div class="chat-messages" id="chatMessages">
+                                    <div style="text-align: center; color: #999; padding: 40px;">
+                                        Sélectionnez une conversation pour commencer à échanger
+                                    </div>
+                                </div>
+
+                                <div class="chat-input-container">
+                                    <input type="text" class="chat-input" id="chatInput"
+                                        placeholder="Tapez votre message..." onkeypress="handleChatKeyPress(event)">
+                                    <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 8: PARAMÈTRES -->
+                <div id="page-settings" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Paramètres du Compte</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nom</label>
+                            <input type="text" value="Dr. Martin">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email professionnel</label>
+                            <input type="email" value="dr.martin@hopital.fr">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Spécialité</label>
+                            <input type="text" value="Néphrologie">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Numéro RPPS</label>
+                            <input type="text" value="12345678901">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Téléphone</label>
+                            <input type="tel" value="01 23 45 67 89">
+                        </div>
+
+                        <button class="btn-primary">Enregistrer les modifications</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Notifications</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" checked> Recevoir les alertes urgentes par email
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" checked> Recevoir les rappels de RDV
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox"> Recevoir les nouveaux messages par SMS
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" checked> Notifications de nouveaux questionnaires remplis
+                            </label>
+                        </div>
+
+                        <button class="btn-primary">Enregistrer les préférences</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Seuils d'Alerte</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Créatinine maximale (mg/L)</label>
+                            <input type="number" value="135">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tension systolique maximale (mmHg)</label>
+                            <input type="number" value="140">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Température corporelle alerte (°C)</label>
+                            <input type="number" step="0.1" value="37.5">
+                        </div>
+
+                        <button class="btn-primary">Enregistrer les seuils</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Sécurité</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Mot de passe actuel</label>
+                            <input type="password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nouveau mot de passe</label>
+                            <input type="password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Confirmer le nouveau mot de passe</label>
+                            <input type="password">
+                        </div>
+
+                        <button class="btn-primary">Changer le mot de passe</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Ajouter Patient -->
+    <div id="addPatientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ajouter un nouveau patient</h2>
+                <button class="modal-close" onclick="closeAddPatientModal()">×</button>
+            </div>
+
+            <form onsubmit="addPatient(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom *</label>
+                        <input type="text" id="patientNom" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prénom *</label>
+                        <input type="text" id="patientPrenom" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="patientEmail" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Téléphone *</label>
+                        <input type="tel" id="patientTel" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date de greffe *</label>
+                        <input type="date" id="patientDateGreffe" required>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="button" class="btn-secondary" onclick="closeAddPatientModal()"
+                        style="flex: 1;">Annuler</button>
+                    <button type="submit" class="btn-primary" style="flex: 1;">Ajouter le patient</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Créer RDV -->
+    <div id="addRdvModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Planifier un rendez-vous</h2>
+                <button class="modal-close" onclick="closeAddRdvModal()">×</button>
+            </div>
+
+            <form onsubmit="addRdv(event)">
+                <div class="form-group">
+                    <label>Patient *</label>
+                    <select id="rdvPatient" required>
+                        <option value="">Sélectionnez un patient...</option>
+                        <option>Sophie Martin</option>
+                        <option>Jean Dupont</option>
+                        <option>Pierre Moreau</option>
+                        <option>Sophie Bernard</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="rdvDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Heure *</label>
+                        <input type="time" id="rdvHeure" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Durée (minutes) *</label>
+                    <select id="rdvDuree" required>
+                        <option>30</option>
+                        <option>45</option>
+                        <option>60</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Motif *</label>
+                    <textarea id="rdvMotif" required placeholder="Ex: Consultation de suivi post-greffe"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="button" class="btn-secondary" onclick="closeAddRdvModal()"
+                        style="flex: 1;">Annuler</button>
+                    <button type="submit" class="btn-primary" style="flex: 1;">Planifier le RDV</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Créer Ordonnance -->
+    <div id="createOrdonnanceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Créer une ordonnance</h2>
+                <button class="modal-close" onclick="closeCreateOrdonnanceModal()">×</button>
+            </div>
+
+            <form onsubmit="createOrdonnance(event)">
+                <div class="form-group">
+                    <label>Patient *</label>
+                    <select id="ordoPatient" required>
+                        <option value="">Sélectionnez un patient...</option>
+                        <option>Sophie Martin</option>
+                        <option>Jean Dupont</option>
+                        <option>Pierre Moreau</option>
+                        <option>Sophie Bernard</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Médicaments et posologie *</label>
+                    <textarea id="ordoMedicaments" required
+                        placeholder="Ex: Advagraf 5mg - 2 fois par jour&#10;Certican 0.75mg - 1 fois par jour"
+                        rows="5"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Durée du traitement *</label>
+                    <select id="ordoDuree" required>
+                        <option>1 mois</option>
+                        <option>3 mois</option>
+                        <option>6 mois</option>
+                        <option>12 mois</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes complémentaires</label>
+                    <textarea id="ordoNotes" placeholder="Instructions particulières, précautions..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="button" class="btn-secondary" onclick="closeCreateOrdonnanceModal()"
+                        style="flex: 1;">Annuler</button>
+                    <button type="submit" class="btn-primary" style="flex: 1;">Créer l'ordonnance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function navigateTo(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            const navLink = document.querySelector(`[data-page="${page}"]`);
+            if (navLink) navLink.classList.add('active');
+
+            const titles = {
+                'dashboard': ['Bonjour, Dr. Martin', 'Voici un aperçu de votre journée'],
+                'patients': ['Liste des Patients', 'Tous vos patients triés par priorité'],
+                'gestion': ['Gestion des Patients', 'Ajouter ou modifier les informations patients'],
+                'suivi': ['Suivi des Données', 'Constantes, symptômes et traitements'],
+                'rdv': ['Planification des RDV', 'Gérer les rendez-vous et consultations'],
+                'ordonnances': ['Gestion des Ordonnances', 'Créer et gérer les prescriptions'],
+                'messagerie': ['Messagerie', 'Communication avec les patients'],
+                'settings': ['Paramètres', 'Configuration de votre compte']
+            };
+
+            if (titles[page]) {
+                document.getElementById('pageTitle').textContent = titles[page][0];
+                document.getElementById('pageSubtitle').textContent = titles[page][1];
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        let medecinNavInitialized = false;
+
+        function bootstrapMedecinNavigation() {
+            if (medecinNavInitialized) {
+                return true;
+            }
+
+            const navLinks = document.querySelectorAll('.nav-link[data-page]');
+            if (!navLinks.length) {
+                return false;
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    navigateTo(this.getAttribute('data-page'));
+                });
+            });
+
+            medecinNavInitialized = true;
+            navigateTo('dashboard');
+            return true;
+        }
+
+        const handleMedecinSidebarLoaded = (event) => {
+            if (event.detail?.type === 'medecin') {
+                if (bootstrapMedecinNavigation()) {
+                    window.removeEventListener('sidebar:loaded', handleMedecinSidebarLoaded);
+                }
+            }
+        };
+
+        window.addEventListener('sidebar:loaded', handleMedecinSidebarLoaded);
+
+        if (bootstrapMedecinNavigation()) {
+            window.removeEventListener('sidebar:loaded', handleMedecinSidebarLoaded);
+        }
+
+        // Filter patients
+        function filterPatients(filter) {
+            const items = document.querySelectorAll('#allPatientsList .patient-item');
+            items.forEach(item => {
+                if (filter === 'all') {
+                    item.style.display = '';
+                } else {
+                    item.style.display = item.getAttribute('data-priority') === filter ? '' : 'none';
+                }
+            });
+
+            document.querySelectorAll('#page-patients .tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // View patient
+        function viewPatient(name) {
+            alert(`Dossier du patient: ${name}\n\n- Données de suivi\n- Constantes vitales\n- Traitements en cours\n- Historique des RDV\n- Messages`);
+        }
+
+        // Edit patient
+        function editPatient(name) {
+            alert(`Modification du dossier de: ${name}\n\nVous pouvez modifier:\n- Informations personnelles\n- Traitements\n- Notes médicales`);
+        }
+
+        // Modal Ajouter Patient
+        function openAddPatientModal() {
+            document.getElementById('addPatientModal').classList.add('active');
+        }
+
+        function closeAddPatientModal() {
+            document.getElementById('addPatientModal').classList.remove('active');
+        }
+
+        function addPatient(e) {
+            e.preventDefault();
+
+            const nom = document.getElementById('patientNom').value;
+            const prenom = document.getElementById('patientPrenom').value;
+            const email = document.getElementById('patientEmail').value;
+            const tel = document.getElementById('patientTel').value;
+            const dateGreffe = document.getElementById('patientDateGreffe').value;
+
+            const initiales = (prenom[0] + nom[0]).toUpperCase();
+
+            // Ajouter dans la liste de gestion
+            const manageList = document.getElementById('managePatientsList');
+            const newPatientManage = document.createElement('div');
+            newPatientManage.className = 'patient-item';
+            newPatientManage.innerHTML = `
+                <div class="patient-avatar">${initiales}</div>
+                <div class="patient-info">
+                    <h4>${prenom} ${nom}</h4>
+                    <p>${email} • ${tel}</p>
+                </div>
+                <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="editPatient('${prenom} ${nom}')">✏️ Modifier</button>
+            `;
+            manageList.appendChild(newPatientManage);
+
+            // Ajouter dans la liste complète
+            const allList = document.getElementById('allPatientsList');
+            const newPatientAll = document.createElement('div');
+            newPatientAll.className = 'patient-item';
+            newPatientAll.setAttribute('data-priority', 'stable');
+            newPatientAll.innerHTML = `
+                <div class="patient-avatar">${initiales}</div>
+                <div class="patient-info">
+                    <h4>${prenom} ${nom}</h4>
+                    <p>Greffe: ${dateGreffe} • Nouveau patient</p>
+                </div>
+                <span class="patient-status status-stable">Stable</span>
+            `;
+            allList.appendChild(newPatientAll);
+
+            // Update count
+            const totalCount = document.getElementById('totalPatients');
+            totalCount.textContent = parseInt(totalCount.textContent) + 1;
+
+            alert(`✅ Patient ajouté avec succès !\n\nNom: ${prenom} ${nom}\nEmail: ${email}\nDate de greffe: ${dateGreffe}`);
+            closeAddPatientModal();
+            document.querySelector('form').reset();
+        }
+
+        // Modal Ajouter RDV
+        function openAddRdvModal() {
+            document.getElementById('addRdvModal').classList.add('active');
+        }
+
+        function closeAddRdvModal() {
+            document.getElementById('addRdvModal').classList.remove('active');
+        }
+
+        function addRdv(e) {
+            e.preventDefault();
+
+            const patient = document.getElementById('rdvPatient').value;
+            const date = document.getElementById('rdvDate').value;
+            const heure = document.getElementById('rdvHeure').value;
+            const duree = document.getElementById('rdvDuree').value;
+            const motif = document.getElementById('rdvMotif').value;
+
+            // Ajouter dans la liste aujourd'hui
+            const todayList = document.getElementById('rdvTodayList');
+            const newRdv = document.createElement('div');
+            newRdv.className = 'appointment-item';
+            newRdv.innerHTML = `
+                <div class="appointment-time">
+                    <div class="time">${heure}</div>
+                    <div class="duration">${duree} min</div>
+                </div>
+                <div class="appointment-details">
+                    <h4>${patient}</h4>
+                    <p>${motif} • Cabinet 201</p>
+                </div>
+                <button class="btn-danger" onclick="cancelRdv(this, '${patient}', '${heure}')">Annuler</button>
+            `;
+            todayList.appendChild(newRdv);
+
+            // Update counter
+            const rdvCount = document.getElementById('totalRdvToday');
+            rdvCount.textContent = parseInt(rdvCount.textContent) + 1;
+
+            alert(`✅ Rendez-vous planifié avec succès !\n\nPatient: ${patient}\nDate: ${date}\nHeure: ${heure}\nDurée: ${duree} min\nMotif: ${motif}`);
+            closeAddRdvModal();
+        }
+
+        function cancelRdv(button, patient, time) {
+            if (confirm(`Voulez-vous vraiment annuler le rendez-vous de ${patient} à ${time} ?`)) {
+                button.closest('.appointment-item').remove();
+
+                // Update counter
+                const rdvCount = document.getElementById('totalRdvToday');
+                rdvCount.textContent = Math.max(0, parseInt(rdvCount.textContent) - 1);
+
+                alert(`Le rendez-vous de ${patient} à ${time} a été annulé.`);
+            }
+        }
+
+        // Modal Créer Ordonnance
+        function openCreateOrdonnanceModal() {
+            document.getElementById('createOrdonnanceModal').classList.add('active');
+        }
+
+        function closeCreateOrdonnanceModal() {
+            document.getElementById('createOrdonnanceModal').classList.remove('active');
+        }
+
+        function createOrdonnance(e) {
+            e.preventDefault();
+
+            const patient = document.getElementById('ordoPatient').value;
+            const medicaments = document.getElementById('ordoMedicaments').value;
+            const duree = document.getElementById('ordoDuree').value;
+            const notes = document.getElementById('ordoNotes').value;
+
+            const initiales = patient.split(' ').map(n => n[0]).join('');
+            const today = new Date().toLocaleDateString('fr-FR');
+
+            // Ajouter dans la liste
+            const ordoList = document.getElementById('ordonnancesList');
+            const newOrdo = document.createElement('div');
+            newOrdo.className = 'patient-item';
+            newOrdo.innerHTML = `
+                <div class="patient-avatar">${initiales}</div>
+                <div class="patient-info">
+                    <h4>Ordonnance - ${patient}</h4>
+                    <p>${today} • ${medicaments.split('\n')[0]} • Durée: ${duree}</p>
+                </div>
+                <button class="btn-primary" style="width: auto; padding: 8px 16px;">📄 Voir</button>
+            `;
+            ordoList.appendChild(newOrdo);
+
+            alert(`✅ Ordonnance créée avec succès !\n\nPatient: ${patient}\nDurée: ${duree}\nMédicaments:\n${medicaments}`);
+            closeCreateOrdonnanceModal();
+        }
+
+        // Tabs RDV
+        function showRdvTab(tab) {
+            document.querySelectorAll('#page-rdv .tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('rdv-' + tab).classList.add('active');
+
+            document.querySelectorAll('#page-rdv .tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Tabs Suivi
+        function showSuiviTab(tab) {
+            document.querySelectorAll('#page-suivi .tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('suivi-' + tab).classList.add('active');
+
+            document.querySelectorAll('#page-suivi .tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Load Patient Data
+        function loadPatientData() {
+            const patient = document.getElementById('patientSelect').value;
+
+            if (!patient) {
+                alert('Veuillez sélectionner un patient');
+                return;
+            }
+
+            // Charger symptômes
+            document.getElementById('symptomesData').innerHTML = `
+                <div class="alert alert-info">
+                    <span class="alert-icon">📋</span>
+                    <div class="alert-content">
+                        <h4>14/10/2025 - Légère fatigue</h4>
+                        <p>Intensité: 3/10 • Patient: ${patient}</p>
+                    </div>
+                </div>
+                <div class="alert alert-warning">
+                    <span class="alert-icon">⚠️</span>
+                    <div class="alert-content">
+                        <h4>10/10/2025 - Douleur au greffon</h4>
+                        <p>Intensité: 5/10 • Patient: ${patient}</p>
+                    </div>
+                </div>
+            `;
+
+            // Charger traitements
+            document.getElementById('traitementsData').innerHTML = `
+                <div class="questionnaire-item">
+                    <div class="questionnaire-header">
+                        <span class="questionnaire-title">Advagraf 5mg</span>
+                        <span class="questionnaire-date">Pris aujourd'hui ✓</span>
+                    </div>
+                    <div class="questionnaire-data">
+                        <div class="data-point">
+                            <div class="data-label">Matin</div>
+                            <div class="data-value">✅ 08:00</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-label">Soir</div>
+                            <div class="data-value">⏰ 20:00</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-label">Observance</div>
+                            <div class="data-value">95%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="questionnaire-item">
+                    <div class="questionnaire-header">
+                        <span class="questionnaire-title">Certican 0.75mg</span>
+                        <span class="questionnaire-date">Pris aujourd'hui ✓</span>
+                    </div>
+                    <div class="questionnaire-data">
+                        <div class="data-point">
+                            <div class="data-label">Matin</div>
+                            <div class="data-value">✅ 08:00</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-label">Observance</div>
+                            <div class="data-value">98%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Charger questionnaires
+            document.getElementById('questionnairesData').innerHTML = `
+                <div class="questionnaire-item">
+                    <div class="questionnaire-header">
+                        <span class="questionnaire-title">Questionnaire Post-Greffe - ${patient}</span>
+                        <span class="questionnaire-date">14/10/2025</span>
+                    </div>
+                    <div class="questionnaire-data">
+                        <div class="data-point">
+                            <div class="data-label">Poids</div>
+                            <div class="data-value">68 kg</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-label">Tension</div>
+                            <div class="data-value">125/80</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-label">Température</div>
+                            <div class="data-value">36.8°C</div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 13px; color: #666;">
+                        État général: Bon • Traitement bien toléré • Aucun effet secondaire signalé
+                    </p>
+                </div>
+                <div class="questionnaire-item">
+                    <div class="questionnaire-header">
+                        <span class="questionnaire-title">Questionnaire Post-Greffe - ${patient}</span>
+                        <span class="questionnaire-date">07/10/2025</span>
+                    </div>
+                    <div class="questionnaire-data">
+                        <div class="data-point">
+                            <div class="data-label">Poids</div>
+                            <div class="data-value">67.5 kg</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-label">Tension</div>
+                            <div class="data-value">122/78</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-label">Température</div>
+                            <div class="data-value">36.9°C</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            alert(`✅ Données chargées pour ${patient}`);
+        }
+
+        // Messagerie
+        let currentChat = null;
+
+        function filterMessages(filter) {
+            document.querySelectorAll('#page-messagerie .tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Ici vous pouvez filtrer les messages selon le type
+            alert(`Filtre: ${filter}`);
+        }
+
+        function openChat(patientName, initials) {
+            currentChat = patientName;
+
+            document.getElementById('chatAvatarHeader').textContent = initials;
+            document.getElementById('chatPatientName').textContent = patientName;
+            document.getElementById('chatPatientStatus').textContent = 'En ligne';
+
+            // Charger les messages
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = `
+                <div class="chat-message received">
+                    <div class="chat-message-avatar">${initials}</div>
+                    <div class="chat-bubble">
+                        Bonjour Docteur, j'ai ressenti des douleurs au niveau du greffon ce matin. Est-ce normal ?
+                    </div>
+                </div>
+                <div class="chat-message sent">
+                    <div class="chat-message-avatar">DM</div>
+                    <div class="chat-bubble">
+                        Bonjour ${patientName.split(' ')[0]}, pouvez-vous me décrire la douleur ? Intensité de 1 à 10 ?
+                    </div>
+                </div>
+                <div class="chat-message received">
+                    <div class="chat-message-avatar">${initials}</div>
+                    <div class="chat-bubble">
+                        Je dirais environ 4/10, c'est une douleur sourde qui va et vient.
+                    </div>
+                </div>
+            `;
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+            if (!currentChat) {
+                alert('Veuillez sélectionner une conversation');
+                return;
+            }
+
+            const messagesContainer = document.getElementById('chatMessages');
+            const newMessage = document.createElement('div');
+            newMessage.className = 'chat-message sent';
+            newMessage.innerHTML = `
+                <div class="chat-message-avatar">DM</div>
+                <div class="chat-bubble">${message}</div>
+            `;
+            messagesContainer.appendChild(newMessage);
+
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                alert('Déconnexion réussie. Redirection vers la page de connexion...');
+            }
+        }
+    </script>
+</body>
+
+</html>

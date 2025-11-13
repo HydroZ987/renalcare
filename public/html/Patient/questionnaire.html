@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionnaires - Suivi Greffe Rénale</title>
+    <link rel="stylesheet" href="../../style/patient.css">
+    <script src="/js/sidebar.js" defer></script>
+    <script src="/js/patient-questionnaire.js" defer></script>
+</head>
+
+<body>
+    <div class="dashboard">
+        <div data-sidebar="patient" data-active="questionnaire"></div>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>Questionnaires</h1>
+                    <p>Suivez votre état de santé avec nos questionnaires</p>
+                </div>
+            </header>
+
+            <div class="content">
+                <section class="card" style="margin-bottom: 25px;">
+                    <div class="card-header">
+                        <div>
+                            <h2>Questionnaire clinique avancé</h2>
+                            <p class="text-muted-foreground">Analyse complète de votre greffe : symptômes, constantes vitales et bilans biologiques.</p>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <p class="text-sm">Prenez quelques minutes pour répondre à ce questionnaire détaillé. Les résultats vous offriront une synthèse claire et des recommandations personnalisées à partager avec votre équipe soignante.</p>
+                    </div>
+                </section>
+
+                <section id="questionnaireApp">
+                    <div id="form-container"></div>
+                    <div id="results-container" style="display: none;"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div class="remote-chatbot" id="remoteChatbot">
+        <button class="remote-chatbot__toggle" id="remoteChatbotToggle" aria-label="Ouvrir le chatbot médical">
+            💬
+            <span class="remote-chatbot__badge">IA</span>
+        </button>
+        <iframe src="https://izadine.pythonanywhere.com/" title="Chatbot médical IA" loading="lazy"></iframe>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const wrapper = document.getElementById('remoteChatbot');
+            const toggle = document.getElementById('remoteChatbotToggle');
+            if (wrapper && toggle) {
+                toggle.addEventListener('click', () => wrapper.classList.toggle('open'));
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mot de passe oublié - Suivi Greffe Rénale</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .step-indicator {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .section-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input.error {
+            border-color: #e74c3c;
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #721c24;
+            display: none;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .success-box h3 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .verification-code {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .code-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .password-requirements {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .password-requirements div {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .password-requirements div.valid {
+            color: #28a745;
+        }
+
+        .password-requirements div.invalid {
+            color: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🔐</div>
+            <h1>Mot de passe oublié</h1>
+            <p>Réinitialisez votre mot de passe en quelques étapes</p>
+        </div>
+
+        <div class="content">
+            <div class="step-indicator" id="stepIndicator">Étape 1 sur 3</div>
+
+            <!-- Étape 1: Sélection du type d'utilisateur et email -->
+            <div class="form-section active" data-step="1">
+                <h2 class="section-title">Identification</h2>
+                <p class="section-subtitle">Sélectionnez votre type de compte et entrez votre adresse email</p>
+
+                <div class="info-box">
+                    ℹ️ Un code de vérification sera envoyé à votre adresse email pour réinitialiser votre mot de passe.
+                </div>
+
+                <div class="form-group">
+                    <label for="userType">Type de compte *</label>
+                    <select id="userType" required>
+                        <option value="">Sélectionnez...</option>
+                        <option value="patient">Patient</option>
+                        <option value="medecin">Médecin</option>
+                        <option value="admin">Administrateur</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Adresse Email *</label>
+                    <input type="email" id="email" placeholder="votre.email@exemple.fr" required>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="sendVerificationCode()">Envoyer le code</button>
+                </div>
+
+                <div class="back-link">
+                    <a href="#" onclick="goBackToLogin()">← Retour à la connexion</a>
+                </div>
+            </div>
+
+            <!-- Étape 2: Vérification du code -->
+            <div class="form-section" data-step="2">
+                <h2 class="section-title">Code de vérification</h2>
+                <p class="section-subtitle">Entrez le code à 6 chiffres envoyé à <strong id="emailDisplay"></strong></p>
+
+                <div class="info-box">
+                    📧 Le code est valable pendant 10 minutes.
+                </div>
+
+                <div class="verification-code">
+                    <input type="text" class="code-input" maxlength="1" data-index="0">
+                    <input type="text" class="code-input" maxlength="1" data-index="1">
+                    <input type="text" class="code-input" maxlength="1" data-index="2">
+                    <input type="text" class="code-input" maxlength="1" data-index="3">
+                    <input type="text" class="code-input" maxlength="1" data-index="4">
+                    <input type="text" class="code-input" maxlength="1" data-index="5">
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="#" style="color: #667eea; text-decoration: none; font-size: 14px;" onclick="resendCode()">Renvoyer le code</a>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Retour</button>
+                    <button type="button" class="btn btn-primary" onclick="verifyCode()">Vérifier</button>
+                </div>
+            </div>
+
+            <!-- Étape 3: Nouveau mot de passe -->
+            <div class="form-section" data-step="3">
+                <h2 class="section-title">Nouveau mot de passe</h2>
+                <p class="section-subtitle">Créez un nouveau mot de passe sécurisé pour votre compte</p>
+
+                <div id="passwordError" class="error-box">
+                    ❌ <strong>Mot de passe invalide :</strong> <span id="errorMessage"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="newPassword">Nouveau mot de passe *</label>
+                    <input type="password" id="newPassword" placeholder="Minimum 8 caractères" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmer le mot de passe *</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirmez votre mot de passe" required>
+                </div>
+
+                <div class="password-requirements">
+                    <div id="req-length">🔹 Au moins 8 caractères</div>
+                    <div id="req-uppercase">🔹 Au moins une majuscule</div>
+                    <div id="req-lowercase">🔹 Au moins une minuscule</div>
+                    <div id="req-number">🔹 Au moins un chiffre</div>
+                    <div id="req-match">🔹 Les mots de passe correspondent</div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="resetPassword()">Réinitialiser le mot de passe</button>
+                </div>
+            </div>
+
+            <!-- Étape 4: Confirmation -->
+            <div class="form-section" data-step="4">
+                <div class="success-box">
+                    <h3>✅ Mot de passe réinitialisé !</h3>
+                    <p style="margin: 15px 0;">Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.</p>
+                    <button type="button" class="btn btn-primary" style="margin-top: 20px; width: 100%;" onclick="goBackToLogin()">
+                        Se connecter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let selectedUserType = '';
+
+        function updateStepIndicator() {
+            const indicator = document.getElementById('stepIndicator');
+            if (currentStep <= 3) {
+                indicator.textContent = `Étape ${currentStep} sur 3`;
+            } else {
+                indicator.style.display = 'none';
+            }
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelector(`[data-step="${step}"]`).classList.add('active');
+            currentStep = step;
+            updateStepIndicator();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        function sendVerificationCode() {
+            const userType = document.getElementById('userType').value;
+            const email = document.getElementById('email').value;
+
+            if (!userType) {
+                alert('Veuillez sélectionner votre type de compte');
+                return;
+            }
+
+            if (!email || !email.includes('@')) {
+                alert('Veuillez entrer une adresse email valide');
+                return;
+            }
+
+            selectedUserType = userType;
+            document.getElementById('emailDisplay').textContent = email;
+            
+            console.log('Code de vérification envoyé à:', email, 'pour le type:', userType);
+            showStep(2);
+        }
+
+        function resendCode() {
+            console.log('Code renvoyé');
+            alert('Un nouveau code a été envoyé à votre adresse email');
+        }
+
+        // Gestion des codes de vérification
+        const codeInputs = document.querySelectorAll('.code-input');
+        codeInputs.forEach((input, index) => {
+            input.addEventListener('input', function(e) {
+                if (e.target.value.length === 1 && index < codeInputs.length - 1) {
+                    codeInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                    codeInputs[index - 1].focus();
+                }
+            });
+        });
+
+        function verifyCode() {
+            const code = Array.from(codeInputs).map(input => input.value).join('');
+            
+            if (code.length !== 6) {
+                alert('Veuillez entrer le code complet à 6 chiffres');
+                return;
+            }
+
+            console.log('Code vérifié:', code);
+            showStep(3);
+        }
+
+        // Validation du mot de passe en temps réel
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+
+        function validatePassword() {
+            const password = newPasswordInput.value;
+            const passwordConfirm = confirmPasswordInput.value;
+
+            const hasLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasLowercase = /[a-z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            const passwordsMatch = password === passwordConfirm && password.length > 0;
+
+            // Mise à jour visuelle des exigences
+            document.getElementById('req-length').className = hasLength ? 'valid' : 'invalid';
+            document.getElementById('req-uppercase').className = hasUppercase ? 'valid' : 'invalid';
+            document.getElementById('req-lowercase').className = hasLowercase ? 'valid' : 'invalid';
+            document.getElementById('req-number').className = hasNumber ? 'valid' : 'invalid';
+            document.getElementById('req-match').className = passwordsMatch ? 'valid' : 'invalid';
+
+            return {
+                isValid: hasLength && hasUppercase && hasLowercase && hasNumber && passwordsMatch,
+                hasLength,
+                hasUppercase,
+                hasLowercase,
+                hasNumber,
+                passwordsMatch
+            };
+        }
+
+        newPasswordInput.addEventListener('input', validatePassword);
+        confirmPasswordInput.addEventListener('input', validatePassword);
+
+        function resetPassword() {
+            const validation = validatePassword();
+            const errorBox = document.getElementById('passwordError');
+            const errorMessage = document.getElementById('errorMessage');
+
+            if (!validation.isValid) {
+                let errors = [];
+                if (!validation.hasLength) errors.push('au moins 8 caractères');
+                if (!validation.hasUppercase) errors.push('une majuscule');
+                if (!validation.hasLowercase) errors.push('une minuscule');
+                if (!validation.hasNumber) errors.push('un chiffre');
+                if (!validation.passwordsMatch && confirmPasswordInput.value) {
+                    errors.push('les mots de passe doivent être identiques');
+                }
+
+                errorMessage.textContent = 'Le mot de passe doit contenir ' + errors.join(', ') + '.';
+                errorBox.style.display = 'block';
+                
+                newPasswordInput.classList.add('error');
+                if (!validation.passwordsMatch) {
+                    confirmPasswordInput.classList.add('error');
+                }
+                return;
+            }
+
+            errorBox.style.display = 'none';
+            newPasswordInput.classList.remove('error');
+            confirmPasswordInput.classList.remove('error');
+
+            console.log('Mot de passe réinitialisé pour le type:', selectedUserType);
+            showStep(4);
+        }
+
+        function goBackToLogin() {
+            // Redirection selon le type d'utilisateur
+            const pages = {
+                'patient': 'patient-login-page.html',
+                'medecin': 'medecin-login-page.html',
+                'admin': 'admin-login-page.html'
+            };
+
+            if (selectedUserType && pages[selectedUserType]) {
+                window.location.href = pages[selectedUserType];
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

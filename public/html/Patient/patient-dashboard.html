@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Patient - Suivi Greffe Rénale</title>
+    <link rel="stylesheet" href="../../style/patient.css">
+    <script src="/js/sidebar.js" defer></script>
+</head>
+
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div data-sidebar="patient" data-active="dashboard"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Bonjour, Sophie Martin</h1>
+                    <p>Voici votre suivi du jour</p>
+                </div>
+                <div class="header-right">
+                    <div class="notification-icon">
+                        🔔
+                        <span class="notification-badge">3</span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar">SM</div>
+                        <div class="user-info">
+                            <h3>Sophie Martin</h3>
+                            <p>Patient</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card green">
+                        <div class="stat-info">
+                            <h3>7</h3>
+                            <p>Mois post-greffe</p>
+                        </div>
+                        <div class="stat-icon">🫘</div>
+                    </div>
+
+                    <div class="stat-card blue">
+                        <div class="stat-info">
+                            <h3>2</h3>
+                            <p>Prochains RDV</p>
+                        </div>
+                        <div class="stat-icon">📅</div>
+                    </div>
+
+                    <div class="stat-card orange">
+                        <div class="stat-info">
+                            <h3>1</h3>
+                            <p>Questionnaire en attente</p>
+                        </div>
+                        <div class="stat-icon">⚠️</div>
+                    </div>
+
+                    <div class="stat-card purple">
+                        <div class="stat-info">
+                            <h3>2</h3>
+                            <p>Nouveaux messages</p>
+                        </div>
+                        <div class="stat-icon">💬</div>
+                    </div>
+                </div>
+
+                <!-- Two Column Layout -->
+                <div class="two-column">
+                    <!-- Left Column: Main Info -->
+                    <div>
+                        <!-- Informations Générales -->
+                        <div class="card" style="margin-bottom: 15px;">
+                            <div class="card-header">
+                                <h2>Informations Générales</h2>
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-box">
+                                    <div class="info-label">Date de Greffe</div>
+                                    <div class="info-value">15 mars 2025</div>
+                                </div>
+                                <div class="info-box">
+                                    <div class="info-label">Médecin Référent</div>
+                                    <div class="info-value">Dr. Jean Dubois</div>
+                                </div>
+                                <div class="info-box">
+                                    <div class="info-label">Groupe Sanguin</div>
+                                    <div class="info-value">A+</div>
+                                </div>
+                                <div class="info-box">
+                                    <div class="info-label">Dernier bilan</div>
+                                    <div class="info-value">12 octobre 2025</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Traitement du jour -->
+                        <div class="card" style="margin-bottom: 15px;">
+                            <div class="card-header">
+                                <h2>Mon traitement aujourd'hui</h2>
+                                <a href="#" class="btn-link">Voir tout →</a>
+                            </div>
+
+                            <div class="treatment-item">
+                                <div class="treatment-icon">💊</div>
+                                <div class="treatment-info">
+                                    <h4>Advagraf</h4>
+                                    <p>5 mg • Matin (08:00) • Pris aujourd'hui</p>
+                                </div>
+                                <span class="treatment-status status-taken">✓ Pris</span>
+                            </div>
+
+                            <div class="treatment-item">
+                                <div class="treatment-icon">💊</div>
+                                <div class="treatment-info">
+                                    <h4>Advagraf</h4>
+                                    <p>5 mg • Soir (20:00) • À prendre</p>
+                                </div>
+                                <span class="treatment-status status-pending">En attente</span>
+                            </div>
+
+                            <div class="treatment-item">
+                                <div class="treatment-icon">💊</div>
+                                <div class="treatment-info">
+                                    <h4>Certican</h4>
+                                    <p>0.75 mg • Matin (08:00) • Pris aujourd'hui</p>
+                                </div>
+                                <span class="treatment-status status-taken">✓ Pris</span>
+                            </div>
+                        </div>
+
+                        <!-- Messages récents -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Messages récents</h2>
+                                <a href="#" class="btn-link">Messagerie →</a>
+                            </div>
+
+                            <div class="message-item">
+                                <div class="message-avatar">DR</div>
+                                <div class="message-content">
+                                    <div class="message-header">
+                                        <span class="message-sender">Dr. Jean Dubois</span>
+                                        <span class="message-time">Il y a 2h</span>
+                                    </div>
+                                    <div class="message-text">
+                                        Bonjour Sophie, j'ai bien reçu vos derniers résultats. Votre taux de créatinine
+                                        est préoccupant. Pouvez-vous prendre rendez-vous cette semaine ?
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="message-item">
+                                <div class="message-avatar">IF</div>
+                                <div class="message-content">
+                                    <div class="message-header">
+                                        <span class="message-sender">Inf. Claire Robert</span>
+                                        <span class="message-time">Hier 16h30</span>
+                                    </div>
+                                    <div class="message-text">
+                                        N'oubliez pas de remplir votre questionnaire bimensuel. C'est important pour
+                                        votre suivi.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: RDV & Alerts -->
+                    <div>
+                        <!-- Prochain RDV -->
+                        <div class="card" style="margin-bottom: 15px;">
+                            <div class="card-header">
+                                <h2>Prochains rendez-vous</h2>
+                                <a href="#" class="btn-link">Planning →</a>
+                            </div>
+
+                            <div class="appointment-item">
+                                <div class="appointment-time">
+                                    <div class="time">22 Oct</div>
+                                    <div class="duration">14:30</div>
+                                </div>
+                                <div class="appointment-details">
+                                    <h4>Dr. Jean Dubois</h4>
+                                    <p>Consultation de suivi post-greffe</p>
+                                </div>
+                            </div>
+
+                            <div class="appointment-item">
+                                <div class="appointment-time">
+                                    <div class="time">5 Nov</div>
+                                    <div class="duration">09:00</div>
+                                </div>
+                                <div class="appointment-details">
+                                    <h4>Laboratoire</h4>
+                                    <p>Bilan sanguin de contrôle</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alertes -->
+                        <div class="card" style="margin-bottom: 15px;">
+                            <div class="card-header">
+                                <h2>Alertes & Notifications</h2>
+                            </div>
+
+                            <div class="alert alert-danger">
+                                <span class="alert-icon">🔴</span>
+                                <div class="alert-content">
+                                    <h4>Créatinine élevée</h4>
+                                    <p>Taux: 245 mg/L. Contactez votre médecin.</p>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <span class="alert-icon">⚠️</span>
+                                <div class="alert-content">
+                                    <h4>Questionnaire en attente</h4>
+                                    <p>Votre questionnaire bimensuel doit être rempli.</p>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <span class="alert-icon">💬</span>
+                                <div class="alert-content">
+                                    <h4>Nouveaux messages</h4>
+                                    <p>2 messages non lus de votre équipe médicale.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rappels du jour -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2>Rappels du jour</h2>
+                            </div>
+
+                            <div class="appointment-item">
+                                <div class="appointment-time">
+                                    <div class="time">20:00</div>
+                                </div>
+                                <div class="appointment-details">
+                                    <h4>Advagraf 5mg</h4>
+                                    <p>Traitement immunosuppresseur</p>
+                                </div>
+                            </div>
+
+                            <div class="appointment-item">
+                                <div class="appointment-time">
+                                    <div class="time">22:00</div>
+                                </div>
+                                <div class="appointment-details">
+                                    <h4>Mesure tension</h4>
+                                    <p>Contrôle tension artérielle</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Actions rapides</h2>
+                    </div>
+                    <div class="quick-actions">
+                        <div class="action-btn">
+                            <div class="icon">📋</div>
+                            <p>Remplir questionnaire</p>
+                        </div>
+                        <div class="action-btn">
+                            <div class="icon">💬</div>
+                            <p>Contacter mon médecin</p>
+                        </div>
+                        <div class="action-btn">
+                            <div class="icon">📊</div>
+                            <p>Voir mes résultats</p>
+                        </div>
+                        <div class="action-btn">
+                            <div class="icon">📅</div>
+                            <p>Planifier RDV</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Chatbot Button -->
+    <button class="chatbot-button" onclick="toggleChatbot()">
+        💬
+        <span class="chatbot-badge">AI</span>
+    </button>
+
+    <!-- Chatbot Window -->
+    <div class="chatbot-window" id="chatbotWindow">
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <div class="chatbot-avatar">🤖</div>
+                <div class="chatbot-title">
+                    <h3>Assistant Virtuel</h3>
+                    <div class="chatbot-status">En ligne</div>
+                </div>
+            </div>
+            <div class="chatbot-close" onclick="toggleChatbot()">×</div>
+        </div>
+
+        <div class="chatbot-body" id="chatbotBody">
+            <div class="faq-list">
+                <div class="chatbot-section-title">Questions fréquentes :</div>
+                <button class="faq-button"
+                    onclick="askQuestion('Quels sont les effets secondaires de mes médicaments ?')">
+                    Quels sont les effets secondaires de mes médicaments ?
+                </button>
+                <button class="faq-button" onclick="askQuestion('Comment prendre mon traitement immunosuppresseur ?')">
+                    Comment prendre mon traitement immunosuppresseur ?
+                </button>
+                <button class="faq-button" onclick="askQuestion('Quand dois-je contacter mon médecin ?')">
+                    Quand dois-je contacter mon médecin ?
+                </button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message bot">
+                    <div class="chat-message-avatar">🤖</div>
+                    <div class="chat-message-content">
+                        👋 Bonjour ! Je suis votre assistant virtuel. Je peux répondre à vos questions sur votre greffe
+                        rénale, vos traitements et votre suivi. Comment puis-je vous aider ?
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-message bot" style="display: flex; gap: 10px; margin-top: 15px;">
+                <div class="chat-message-avatar">🤖</div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chatbot-footer">
+            <div class="chat-input-group">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Posez votre question..."
+                    onkeypress="handleKeyPress(event)">
+                <button class="chat-send-button" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chatbot functionality
+        function toggleChatbot() {
+            const chatbot = document.getElementById('chatbotWindow');
+            chatbot.classList.toggle('active');
+
+            // Focus input when opening
+            if (chatbot.classList.contains('active')) {
+                setTimeout(() => {
+                    document.getElementById('chatInput').focus();
+                }, 300);
+            }
+        }
+
+        function askQuestion(question) {
+            addUserMessage(question);
+
+            // Simulate bot response
+            setTimeout(() => {
+                showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addBotResponse(question);
+                }, 1500);
+            }, 500);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (message) {
+                askQuestion(message);
+                input.value = '';
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function addUserMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message user';
+            messageDiv.innerHTML = `
+                <div class="chat-message-avatar">👤</div>
+                <div class="chat-message-content">${message}</div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addBotResponse(question) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message bot';
+
+            let response = getBotResponse(question);
+
+            messageDiv.innerHTML = `
+                <div class="chat-message-avatar">🤖</div>
+                <div class="chat-message-content">${response}</div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function getBotResponse(question) {
+            const responses = {
+                'effets secondaires': 'Les effets secondaires courants des immunosuppresseurs incluent : nausées, tremblements, maux de tête, et augmentation de la tension artérielle. Si vous ressentez des effets importants, contactez immédiatement votre médecin.',
+                'traitement immunosuppresseur': 'Prenez votre Advagraf à heures fixes (matin et soir), toujours de la même manière (avec ou sans nourriture). Ne modifiez jamais la dose sans avis médical. Évitez le pamplemousse qui interfère avec le traitement.',
+                'contacter médecin': 'Contactez immédiatement votre médecin si vous avez : fièvre > 38°C, douleur au niveau du greffon, diminution des urines, gonflement, prise de poids rapide, ou fatigue inhabituelle.',
+                'default': 'Je comprends votre question. Pour une réponse précise et personnalisée, je vous recommande de contacter directement votre équipe médicale via la messagerie ou lors de votre prochain rendez-vous. Votre sécurité est notre priorité ! 🏥'
+            };
+
+            question = question.toLowerCase();
+
+            for (let key in responses) {
+                if (question.includes(key)) {
+                    return responses[key];
+                }
+            }
+
+            return responses['default'];
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').classList.add('active');
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').classList.remove('active');
+        }
+
+        function scrollToBottom() {
+            const chatBody = document.getElementById('chatbotBody');
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>

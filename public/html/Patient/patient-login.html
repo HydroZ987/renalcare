@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Patient - Suivi Greffe Rénale</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .left-section {
+            background: linear-gradient(135deg, #52c382 0%, #45b8ac 100%);
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+        }
+
+        .left-section h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .left-section p {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        .icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+        }
+
+        .right-section {
+            padding: 60px 40px;
+        }
+
+        .right-section h2 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #52c382;
+            box-shadow: 0 0 0 3px rgba(82, 195, 130, 0.1);
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .remember-forgot input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+        }
+
+        .remember-forgot a {
+            color: #52c382;
+            text-decoration: none;
+        }
+
+        .remember-forgot a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #52c382 0%, #45b8ac 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(82, 195, 130, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .help-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .help-text a {
+            color: #52c382;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .help-text a:hover {
+            text-decoration: underline;
+        }
+
+        .role-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #52c382;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .left-section {
+                padding: 40px 30px;
+            }
+
+            .right-section {
+                padding: 40px 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="left-section">
+            <div class="icon">🫘</div>
+            <div class="role-badge">ESPACE PATIENT</div>
+            <h1>Votre Suivi Personnel</h1>
+            <p>Accédez à votre espace personnel pour suivre votre évolution après votre greffe rénale. Consultez vos
+                traitements, symptômes, et communiquez avec votre équipe médicale.</p>
+        </div>
+
+        <div class="right-section">
+            <h2>Connexion Patient</h2>
+            <p class="subtitle">Bienvenue sur votre espace de suivi</p>
+            <form id="patientLoginForm"  method="POST"> <!--action="/api/auth/patient/login"-->
+                <div class="form-group">
+                    <label for="email">Adresse Email *</label>
+                    <input type="email" id="email" name="email" placeholder="votre.email@exemple.fr" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="numSecu">Numéro de Sécurité Sociale *</label>
+                    <input type="text" id="numSecu" name="numSecu" placeholder="1 85 12 75 123 456 78" maxlength="15"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe *</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <div class="remember-forgot">
+                    <label>
+                        <input type="checkbox" name="remember"> Se souvenir de moi
+                    </label>
+                    <a href="mdp_oubli">Mot de passe oublié ?</a>
+                </div>
+                <a href="/patient/dashboard" >dashboard tempo</a> <!--get nav to dashboard-->
+                <button type="submit" class="btn-login">Se connecter</button>
+
+                <div class="help-text">
+                    Première connexion ? <a href="contact">Contactez votre infirmier</a>
+                </div>
+
+                <div class="info-box">
+                    ℹ️ <strong>Première visite :</strong> Votre compte doit être créé par l'équipe administrative.
+                    Contactez votre service pour obtenir vos identifiants.
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

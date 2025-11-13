@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Suivi Greffe Rénale</title>
+    <link rel="stylesheet" href="../../style/admin.css">
+    <script src="/js/sidebar.js" defer></script>
+</head>
+
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div data-sidebar="admin" data-active="overview"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 id="pageTitle">Tableau de bord Administrateur</h1>
+                    <p id="pageSubtitle">Gestion de la plateforme de suivi post-greffe</p>
+                </div>
+                <div class="header-right">
+                    <div class="notification-icon" onclick="navigateTo('notifications')">
+                        🔔
+                        <span class="notification-badge">8</span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar">AD</div>
+                        <div class="user-info">
+                            <h3>Admin Principal</h3>
+                            <p>Administrateur</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content">
+
+                <!-- PAGE 1: VUE D'ENSEMBLE -->
+                <div id="page-overview" class="page active">
+                    <div class="stats-grid">
+                        <div class="stat-card purple">
+                            <div class="stat-info">
+                                <h3>145</h3>
+                                <p>Total comptes</p>
+                            </div>
+                            <div class="stat-icon">👥</div>
+                        </div>
+                        <div class="stat-card blue">
+                            <div class="stat-info">
+                                <h3>100</h3>
+                                <p>Patients actifs</p>
+                            </div>
+                            <div class="stat-icon">🫘</div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="stat-info">
+                                <h3>35</h3>
+                                <p>Médecins actifs</p>
+                            </div>
+                            <div class="stat-icon">⚕️</div>
+                        </div>
+                        <div class="stat-card orange">
+                            <div class="stat-info">
+                                <h3>8</h3>
+                                <p>En attente</p>
+                            </div>
+                            <div class="stat-icon">⏳</div>
+                        </div>
+                        <div class="stat-card yellow">
+                            <div class="stat-info">
+                                <h3>12</h3>
+                                <p>Notifications</p>
+                            </div>
+                            <div class="stat-icon">🔔</div>
+                        </div>
+                    </div>
+
+                    <div class="two-column">
+                        <div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Activité Récente</h2>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">✓</div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">Nouveau compte validé</div>
+                                        <div class="activity-details">Patient: Sophie Benoit</div>
+                                        <div class="activity-time">Il y a 2 heures</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">👤</div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">Nouvelle demande</div>
+                                        <div class="activity-details">Médecin: Dr. Pierre Durand</div>
+                                        <div class="activity-time">Il y a 3 heures</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">🎧</div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">Ticket Support</div>
+                                        <div class="activity-details">Patient signale un bug</div>
+                                        <div class="activity-time">Il y a 5 heures</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Accès Rapides</h2>
+                                </div>
+                                <button class="btn-primary" style="width: 100%; margin-bottom: 10px;"
+                                    onclick="navigateTo('pending')">
+                                    ⏳ Valider les comptes (8)
+                                </button>
+                                <button class="btn-primary" style="width: 100%; margin-bottom: 10px;"
+                                    onclick="navigateTo('support')">
+                                    🎧 Support en attente (3)
+                                </button>
+                                <button class="btn-primary" style="width: 100%; margin-bottom: 10px;"
+                                    onclick="navigateTo('users')">
+                                    👥 Gérer les utilisateurs
+                                </button>
+                                <button class="btn-primary" style="width: 100%;" onclick="navigateTo('stats')">
+                                    📈 Voir les statistiques
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 2: GESTION UTILISATEURS -->
+                <div id="page-users" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Gestion des Utilisateurs</h2>
+                            <button class="btn-primary" onclick="openCreateUserModal()">+ Créer un utilisateur</button>
+                        </div>
+
+                        <div class="search-bar">
+                            <input type="text" class="search-input" placeholder="Rechercher un utilisateur...">
+                            <button class="btn-primary">🔍 Rechercher</button>
+                        </div>
+
+                        <div class="tabs">
+                            <button class="tab active" onclick="filterUsers('all')">Tous <span
+                                    class="tab-badge">145</span></button>
+                            <button class="tab" onclick="filterUsers('patient')">Patients <span
+                                    class="tab-badge">100</span></button>
+                            <button class="tab" onclick="filterUsers('medecin')">Médecins <span
+                                    class="tab-badge">35</span></button>
+                        </div>
+
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Utilisateur</th>
+                                        <th>Type</th>
+                                        <th>Date inscription</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-type="patient">
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar-small">SM</div>
+                                                <div class="user-details">
+                                                    <h4>Sophie Martin</h4>
+                                                    <p>sophie.martin@email.fr</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>Patient</td>
+                                        <td>15/03/2025</td>
+                                        <td><span class="status-badge status-active">Actif</span></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-action btn-view"
+                                                    onclick="viewUser('Sophie Martin')">👁️</button>
+                                                <button class="btn-action btn-edit"
+                                                    onclick="editUser('Sophie Martin')">✏️</button>
+                                                <button class="btn-action btn-delete"
+                                                    onclick="deleteUser(this)">🗑️</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr data-type="medecin">
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar-small">JD</div>
+                                                <div class="user-details">
+                                                    <h4>Dr. Jean Dubois</h4>
+                                                    <p>j.dubois@hopital.fr</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>Médecin</td>
+                                        <td>05/01/2023</td>
+                                        <td><span class="status-badge status-active">Actif</span></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-action btn-view"
+                                                    onclick="viewUser('Dr. Jean Dubois')">👁️</button>
+                                                <button class="btn-action btn-edit"
+                                                    onclick="editUser('Dr. Jean Dubois')">✏️</button>
+                                                <button class="btn-action btn-delete"
+                                                    onclick="deleteUser(this)">🗑️</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 3: COMPTES EN ATTENTE -->
+                <div id="page-pending" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Comptes en Attente de Validation</h2>
+                        </div>
+
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Utilisateur</th>
+                                        <th>Type</th>
+                                        <th>Date demande</th>
+                                        <th>Documents</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar-small">ML</div>
+                                                <div class="user-details">
+                                                    <h4>Marie Lefebvre</h4>
+                                                    <p>marie.lefebvre@email.fr</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>Patient</td>
+                                        <td>15/10/2025</td>
+                                        <td><span class="status-badge status-active">✓ Complet</span></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-action btn-view"
+                                                    onclick="viewUser('Marie Lefebvre')">👁️</button>
+                                                <button class="btn-action btn-validate"
+                                                    onclick="validatePendingUser(this, 'Marie Lefebvre', 'marie.lefebvre@email.fr')">✓
+                                                    Valider</button>
+                                                <button class="btn-action btn-delete"
+                                                    onclick="rejectUser(this, 'Marie Lefebvre')">✗ Refuser</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar-small">PD</div>
+                                                <div class="user-details">
+                                                    <h4>Dr. Pierre Durand</h4>
+                                                    <p>p.durand@hopital.fr</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>Médecin</td>
+                                        <td>14/10/2025</td>
+                                        <td><span class="status-badge status-active">✓ Complet</span></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-action btn-view"
+                                                    onclick="viewUser('Dr. Pierre Durand')">👁️</button>
+                                                <button class="btn-action btn-validate"
+                                                    onclick="validatePendingUser(this, 'Dr. Pierre Durand', 'p.durand@hopital.fr')">✓
+                                                    Valider</button>
+                                                <button class="btn-action btn-delete"
+                                                    onclick="rejectUser(this, 'Dr. Pierre Durand')">✗ Refuser</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 4: STATISTIQUES -->
+                <div id="page-stats" class="page">
+                    <div class="stats-grid">
+                        <div class="stat-card purple">
+                            <div class="stat-info">
+                                <h3>145</h3>
+                                <p>Total utilisateurs</p>
+                            </div>
+                            <div class="stat-icon">👥</div>
+                        </div>
+                        <div class="stat-card blue">
+                            <div class="stat-info">
+                                <h3>892</h3>
+                                <p>Connexions/mois</p>
+                            </div>
+                            <div class="stat-icon">📊</div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="stat-info">
+                                <h3>1,245</h3>
+                                <p>Questionnaires remplis</p>
+                            </div>
+                            <div class="stat-icon">📋</div>
+                        </div>
+                        <div class="stat-card orange">
+                            <div class="stat-info">
+                                <h3>98%</h3>
+                                <p>Taux satisfaction</p>
+                            </div>
+                            <div class="stat-icon">⭐</div>
+                        </div>
+                        <div class="stat-card yellow">
+                            <div class="stat-info">
+                                <h3>156</h3>
+                                <p>Tickets support</p>
+                            </div>
+                            <div class="stat-icon">🎧</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Évolution des Inscriptions</h2>
+                        </div>
+                        <div class="chart-placeholder">
+                            📈 Graphique d'évolution des inscriptions (janvier - octobre 2025)
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Utilisation de la Plateforme</h2>
+                        </div>
+                        <div class="chart-placeholder">
+                            📊 Statistiques d'utilisation quotidienne
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 5: QUESTIONNAIRES -->
+                <div id="page-questionnaires" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Gestion des Questionnaires</h2>
+                            <button class="btn-primary">+ Créer un questionnaire</button>
+                        </div>
+
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Questionnaire</th>
+                                        <th>Type</th>
+                                        <th>Fréquence</th>
+                                        <th>Réponses</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Suivi Post-Greffe</td>
+                                        <td>Patient</td>
+                                        <td>Bimensuel</td>
+                                        <td>245 / 300</td>
+                                        <td><span class="status-badge status-active">Actif</span></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-action btn-view">👁️</button>
+                                                <button class="btn-action btn-edit">✏️</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Suivi Traitement</td>
+                                        <td>Patient</td>
+                                        <td>Hebdomadaire</td>
+                                        <td>450 / 500</td>
+                                        <td><span class="status-badge status-active">Actif</span></td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-action btn-view">👁️</button>
+                                                <button class="btn-action btn-edit">✏️</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 6: SUPPORT / SAV -->
+                <div id="page-support" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Tickets Support</h2>
+                        </div>
+
+                        <div class="tabs">
+                            <button class="tab active">Tous <span class="tab-badge">25</span></button>
+                            <button class="tab">Urgents <span class="tab-badge"
+                                    style="background: #e74c3c;">3</span></button>
+                            <button class="tab">En cours <span class="tab-badge">12</span></button>
+                            <button class="tab">Résolus <span class="tab-badge">10</span></button>
+                        </div>
+
+                        <div class="activity-item" style="border-left-color: #e74c3c;">
+                            <div class="activity-icon"
+                                style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">🔴</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Urgent - Bug connexion</div>
+                                <div class="activity-details">Patient ne peut pas se connecter depuis ce matin</div>
+                                <div class="activity-time">Il y a 1 heure • Ticket #1245</div>
+                            </div>
+                        </div>
+
+                        <div class="activity-item" style="border-left-color: #f39c12;">
+                            <div class="activity-icon"
+                                style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">🟡</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Question médecin</div>
+                                <div class="activity-details">Comment exporter les données des patients ?</div>
+                                <div class="activity-time">Il y a 4 heures • Ticket #1244</div>
+                            </div>
+                        </div>
+
+                        <div class="activity-item" style="border-left-color: #27ae60;">
+                            <div class="activity-icon"
+                                style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">🟢</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Ticket résolu</div>
+                                <div class="activity-details">Problème mot de passe oublié résolu</div>
+                                <div class="activity-time">Hier 15h00 • Ticket #1243</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 7: LOGS SYSTÈME -->
+                <div id="page-logs" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Logs Système</h2>
+                        </div>
+
+                        <div class="tabs">
+                            <button class="tab active">Tous</button>
+                            <button class="tab">Info</button>
+                            <button class="tab">Warning</button>
+                            <button class="tab">Erreurs</button>
+                        </div>
+
+                        <div class="log-item">
+                            <span class="log-time">[2025-10-15 14:23:45]</span>
+                            <span class="log-level info">INFO</span>
+                            <span>Connexion réussie - Admin Principal (IP: 192.168.1.100)</span>
+                        </div>
+
+                        <div class="log-item">
+                            <span class="log-time">[2025-10-15 14:20:12]</span>
+                            <span class="log-level info">INFO</span>
+                            <span>Validation compte patient - Marie Lefebvre</span>
+                        </div>
+
+                        <div class="log-item">
+                            <span class="log-time">[2025-10-15 14:15:33]</span>
+                            <span class="log-level warning">WARNING</span>
+                            <span>Tentative connexion échouée - patient@example.com</span>
+                        </div>
+
+                        <div class="log-item">
+                            <span class="log-time">[2025-10-15 13:45:22]</span>
+                            <span class="log-level error">ERROR</span>
+                            <span>Erreur base de données - Timeout connexion MySQL</span>
+                        </div>
+
+                        <div class="log-item">
+                            <span class="log-time">[2025-10-15 13:30:15]</span>
+                            <span class="log-level info">INFO</span>
+                            <span>Sauvegarde automatique effectuée - 1.2 GB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 8: NOTIFICATIONS -->
+                <div id="page-notifications" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Notifications Système</h2>
+                            <button class="btn-primary">Marquer toutes comme lues</button>
+                        </div>
+
+                        <div class="notification-item unread">
+                            <div class="activity-icon">⏳</div>
+                            <div class="activity-content">
+                                <div class="activity-title">8 nouveaux comptes en attente</div>
+                                <div class="activity-details">Des utilisateurs attendent votre validation</div>
+                                <div class="activity-time">Il y a 30 minutes</div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item unread">
+                            <div class="activity-icon">🎧</div>
+                            <div class="activity-content">
+                                <div class="activity-title">3 tickets support urgents</div>
+                                <div class="activity-details">Des problèmes nécessitent votre attention immédiate</div>
+                                <div class="activity-time">Il y a 1 heure</div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="activity-icon">📊</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Rapport hebdomadaire disponible</div>
+                                <div class="activity-details">Le rapport d'activité de la semaine est prêt</div>
+                                <div class="activity-time">Il y a 3 heures</div>
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="activity-icon">🔔</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Mise à jour système disponible</div>
+                                <div class="activity-details">Version 2.1.5 prête à être installée</div>
+                                <div class="activity-time">Hier 16h30</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE 9: PARAMÈTRES SYSTÈME -->
+                <div id="page-settings" class="page">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Paramètres Généraux</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nom de la plateforme</label>
+                            <input type="text" value="Plateforme de Suivi Post-Greffe Rénale">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email administrateur</label>
+                            <input type="email" value="admin@hopital.fr">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Langue par défaut</label>
+                            <select>
+                                <option>Français</option>
+                                <option>English</option>
+                                <option>Español</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-primary">Enregistrer les modifications</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Seuils d'Alerte</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Créatinine (mg/L)</label>
+                            <input type="number" value="135">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tension artérielle systolique (mmHg)</label>
+                            <input type="number" value="140">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Température corporelle (°C)</label>
+                            <input type="number" step="0.1" value="37.5">
+                        </div>
+
+                        <button class="btn-primary">Enregistrer les seuils</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Sauvegardes</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fréquence de sauvegarde automatique</label>
+                            <select>
+                                <option>Quotidienne</option>
+                                <option>Hebdomadaire</option>
+                                <option>Mensuelle</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-primary">Lancer une sauvegarde manuelle</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Création Utilisateur -->
+    <div id="createUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Créer un nouvel utilisateur</h2>
+                <button class="modal-close" onclick="closeCreateUserModal()">×</button>
+            </div>
+
+            <form id="createUserForm" onsubmit="createUser(event)">
+                <div class="form-group">
+                    <label>Type d'utilisateur *</label>
+                    <select id="userType" required>
+                        <option value="">Sélectionnez un rôle...</option>
+                        <option value="patient">Patient</option>
+                        <option value="medecin">Médecin</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom *</label>
+                        <input type="text" id="userNom" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prénom *</label>
+                        <input type="text" id="userPrenom" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Téléphone *</label>
+                    <input type="tel" id="userTelephone" required>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="sendCredentials" checked>
+                        Envoyer les identifiants par email automatiquement
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="button" class="btn-secondary" onclick="closeCreateUserModal()"
+                        style="flex: 1;">Annuler</button>
+                    <button type="submit" class="btn-primary" style="flex: 1;">Créer le compte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Navigation system
+        function navigateTo(page) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+            // Show selected page
+            document.getElementById('page-' + page).classList.add('active');
+
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+            // Update page title
+            const titles = {
+                'overview': ['Tableau de bord Administrateur', 'Gestion de la plateforme de suivi post-greffe'],
+                'users': ['Gestion des Utilisateurs', 'Gérer tous les comptes patients et médecins'],
+                'pending': ['Comptes en Attente', 'Valider les nouvelles demandes d\'inscription'],
+                'stats': ['Statistiques', 'Analyses et métriques de la plateforme'],
+                'questionnaires': ['Gestion des Questionnaires', 'Créer et gérer les formulaires de suivi'],
+                'support': ['Support / SAV', 'Gérer les tickets et demandes d\'assistance'],
+                'logs': ['Logs Système', 'Historique des événements système'],
+                'notifications': ['Notifications', 'Centre de notifications administrateur'],
+                'settings': ['Paramètres Système', 'Configuration de la plateforme']
+            };
+
+            document.getElementById('pageTitle').textContent = titles[page][0];
+            document.getElementById('pageSubtitle').textContent = titles[page][1];
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        let adminNavInitialized = false;
+
+        function bootstrapAdminNavigation() {
+            if (adminNavInitialized) {
+                return true;
+            }
+
+            const navLinks = document.querySelectorAll('.nav-link[data-page]');
+            if (!navLinks.length) {
+                return false;
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    navigateTo(page);
+                });
+            });
+
+            adminNavInitialized = true;
+            navigateTo('overview');
+            return true;
+        }
+
+        const handleAdminSidebarLoaded = (event) => {
+            if (event.detail?.type === 'admin') {
+                if (bootstrapAdminNavigation()) {
+                    window.removeEventListener('sidebar:loaded', handleAdminSidebarLoaded);
+                }
+            }
+        };
+
+        window.addEventListener('sidebar:loaded', handleAdminSidebarLoaded);
+
+        if (bootstrapAdminNavigation()) {
+            window.removeEventListener('sidebar:loaded', handleAdminSidebarLoaded);
+        }
+
+        // Filter users table
+        function filterUsers(type) {
+            const rows = document.querySelectorAll('#page-users tbody tr');
+            rows.forEach(row => {
+                if (type === 'all' || row.getAttribute('data-type') === type) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update active tab
+            event.target.parentElement.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                alert('Déconnexion réussie. Redirection vers la page de connexion...');
+                // Redirect to login page
+            }
+        }
+
+        // Modal functions
+        function openCreateUserModal() {
+            document.getElementById('createUserModal').classList.add('active');
+        }
+
+        function closeCreateUserModal() {
+            document.getElementById('createUserModal').classList.remove('active');
+            document.getElementById('createUserForm').reset();
+        }
+
+        // Create user function
+        function createUser(event) {
+            event.preventDefault();
+
+            const userType = document.getElementById('userType').value;
+            const nom = document.getElementById('userNom').value;
+            const prenom = document.getElementById('userPrenom').value;
+            const email = document.getElementById('userEmail').value;
+            const sendCredentials = document.getElementById('sendCredentials').checked;
+
+            const message = `Utilisateur créé avec succès !\n\n` +
+                `Type: ${userType === 'patient' ? 'Patient' : 'Médecin'}\n` +
+                `Nom: ${nom} ${prenom}\n` +
+                `Email: ${email}\n\n` +
+                (sendCredentials ? '✉️ Les identifiants ont été envoyés par email.' : '📋 Les identifiants doivent être communiqués manuellement.');
+
+            alert(message);
+            closeCreateUserModal();
+        }
+
+        // View user function
+        function viewUser(name) {
+            alert(`Affichage des détails de: ${name}\n\n- Informations personnelles\n- Historique d'activité\n- Documents\n- Logs de connexion`);
+        }
+
+        // Edit user function
+        function editUser(name) {
+            alert(`Modification du compte: ${name}\n\nVous pouvez modifier:\n- Informations personnelles\n- Statut (actif/inactif)\n- Rôle (patient/médecin)\n- Permissions`);
+        }
+
+        // Delete user function
+        function deleteUser(button) {
+            const row = button.closest('tr');
+            const name = row.querySelector('.user-details h4').textContent;
+
+            if (confirm(`Êtes-vous sûr de vouloir supprimer le compte de ${name} ?\n\nCette action est irréversible.`)) {
+                alert(`Compte de ${name} supprimé avec succès.`);
+                row.remove();
+            }
+        }
+
+        // Validate pending user function
+        function validatePendingUser(button, name, email) {
+            if (confirm(`Valider le compte de ${name} ?\n\nLe compte sera activé et les identifiants seront envoyés par email à ${email}`)) {
+                alert(`✓ Compte validé avec succès !\n\n` +
+                    `Utilisateur: ${name}\n` +
+                    `Email: ${email}\n\n` +
+                    `✉️ Un email contenant les identifiants de connexion a été automatiquement envoyé.`);
+
+                // Remove row from pending table
+                button.closest('tr').remove();
+            }
+        }
+
+        // Reject user function
+        function rejectUser(button, name) {
+            if (confirm(`Refuser la demande de ${name} ?\n\nL'utilisateur sera notifié par email.`)) {
+                alert(`Demande de ${name} refusée.\n\nUn email de notification a été envoyé.`);
+                button.closest('tr').remove();
+            }
+        }
+    </script>
+</body>
+
+</html>

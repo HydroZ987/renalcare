@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents - Suivi Greffe Rénale</title>
+    <link rel="stylesheet" href="../../style/patient.css">
+    <script src="/js/sidebar.js" defer></script>
+</head>
+
+<body>
+    <div class="dashboard">
+        <div data-sidebar="patient" data-active="document"></div>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>Mes Documents</h1>
+                    <p>Gérez tous vos documents médicaux</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn-upload">📤 Télécharger un document</button>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="filter-bar">
+                    <button class="filter-btn active">Tous</button>
+                    <button class="filter-btn">Bilans</button>
+                    <button class="filter-btn">Ordonnances</button>
+                    <button class="filter-btn">Comptes-rendus</button>
+                    <button class="filter-btn">Imagerie</button>
+                    <button class="filter-btn">Autres</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Documents Récents</h2>
+                    </div>
+
+                    <div class="documents-grid">
+                        <div class="document-card">
+                            <div class="document-icon icon-pdf">📄</div>
+                            <div class="document-info">
+                                <h3>Bilan sanguin 12-10-2025</h3>
+                                <div class="document-meta">
+                                    <div class="meta-item">
+                                        <span>📅</span>
+                                        <span>12 octobre 2025</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span>📁</span>
+                                        <span>Bilans</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span>💾</span>
+                                        <span>245 KB</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="document-actions">
+                                <button class="btn-action">Voir</button>
+                                <button class="btn-action">⬇️</button>
+                            </div>
+                        </div>
+
+                        <div class="document-card">
+                            <div class="document-icon icon-pdf">📄</div>
+                            <div class="document-info">
+                                <h3>Ordonnance Advagraf</h3>
+                                <div class="document-meta">
+                                    <div class="meta-item">
+                                        <span>📅</span>
+                                        <span>8 octobre 2025</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span>📁</span>
+                                        <span>Ordonnances</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span>💾</span>
+                                        <span>180 KB</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="document-actions">
+                                <button class="btn-action">Voir</button>
+                                <button class="btn-action">⬇️</button>
+                            </div>
+                        </div>
+
+                        <div class="document-card">
+                            <div class="document-icon icon-image">🖼️</div>
+                            <div class="document-info">
+                                <h3>Échographie rénale</h3>
+                                <div class="document-meta">
+                                    <div class="meta-item">
+                                        <span>📅</span>
+                                        <span>1 octobre 2025</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span>📁</span>
+                                        <span>Imagerie</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span>💾</span>
+                                        <span>1.2 MB</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="document-actions">
+                                <button class="btn-action">Voir</button>
+                                <button class="btn-action">⬇️</button>
+                            </div>
+                        </div>
+
+                        <div class="document-card">
+                            <div class="document-icon icon-doc">📝</div>
+                            <div class="document-info">
+                                <h3>Compte-rendu consultation</h3>
+                                <div class="document-meta">
+                                    <div class="meta-item">
+                                        <span>📅</span>
+                                        <span>22 septembre 2025</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span>📁</span>
+                                        <span>Comptes-rendus</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span>💾</span>
+                                        <span>320 KB</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="document-actions">
+                                <button class="btn-action">Voir</button>
+                                <button class="btn-action">⬇️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Tous les Documents</h2>
+                    </div>
+
+                    <div class="documents-list">
+                        <div class="document-row">
+                            <div class="row-icon icon-pdf">📄</div>
+                            <div class="row-info">
+                                <h4>Bilan sanguin complet - 12 octobre 2025</h4>
+                                <div class="row-meta">
+                                    <span>📁 Bilans</span>
+                                    <span>📅 12 oct 2025</span>
+                                    <span>💾 245 KB</span>
+                                    <span>👤 Dr. Jean Dubois</span>
+                                </div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn-icon">👁️</button>
+                                <button class="btn-icon">⬇️</button>
+                                <button class="btn-icon">🗑️</button>
+                            </div>
+                        </div>
+
+                        <div class="document-row">
+                            <div class="row-icon icon-pdf">📄</div>
+                            <div class="row-info">
+                                <h4>Ordonnance immunosuppresseurs - Advagraf 5mg</h4>
+                                <div class="row-meta">
+                                    <span>📁 Ordonnances</span>
+                                    <span>📅 8 oct 2025</span>
+                                    <span>💾 180 KB</span>
+                                    <span>👤 Dr. Jean Dubois</span>
+                                </div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn-icon">👁️</button>
+                                <button class="btn-icon">⬇️</button>
+                                <button class="btn-icon">🗑️</button>
+                            </div>
+                        </div>
+
+                        <div class="document-row">
+                            <div class="row-icon icon-image">🖼️</div>
+                            <div class="row-info">
+                                <h4>Échographie rénale de contrôle</h4>
+                                <div class="row-meta">
+                                    <span>📁 Imagerie</span>
+                                    <span>📅 1 oct 2025</span>
+                                    <span>💾 1.2 MB</span>
+                                    <span>👤 Service Radiologie</span>
+                                </div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn-icon">👁️</button>
+                                <button class="btn-icon">⬇️</button>
+                                <button class="btn-icon">🗑️</button>
+                            </div>
+                        </div>
+
+                        <div class="document-row">
+                            <div class="row-icon icon-doc">📝</div>
+                            <div class="row-info">
+                                <h4>Compte-rendu consultation post-greffe M7</h4>
+                                <div class="row-meta">
+                                    <span>📁 Comptes-rendus</span>
+                                    <span>📅 22 sep 2025</span>
+                                    <span>💾 320 KB</span>
+                                    <span>👤 Dr. Jean Dubois</span>
+                                </div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn-icon">👁️</button>
+                                <button class="btn-icon">⬇️</button>
+                                <button class="btn-icon">🗑️</button>
+                            </div>
+                        </div>
+
+                        <div class="document-row">
+                            <div class="row-icon icon-excel">📊</div>
+                            <div class="row-info">
+                                <h4>Historique des analyses - Septembre 2025</h4>
+                                <div class="row-meta">
+                                    <span>📁 Bilans</span>
+                                    <span>📅 30 sep 2025</span>
+                                    <span>💾 85 KB</span>
+                                    <span>👤 Laboratoire</span>
+                                </div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn-icon">👁️</button>
+                                <button class="btn-icon">⬇️</button>
+                                <button class="btn-icon">🗑️</button>
+                            </div>
+                        </div>
+
+                        <div class="document-row">
+                            <div class="row-icon icon-pdf">📄</div>
+                            <div class="row-info">
+                                <h4>Dossier médical complet - Transplantation rénale</h4>
+                                <div class="row-meta">
+                                    <span>📁 Autres</span>
+                                    <span>📅 15 mars 2025</span>
+                                    <span>💾 2.8 MB</span>
+                                    <span>👤 Centre de Transplantation</span>
+                                </div>
+                            </div>
+                            <div class="row-actions">
+                                <button class="btn-icon">👁️</button>
+                                <button class="btn-icon">⬇️</button>
+                                <button class="btn-icon">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

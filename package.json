@@ -1,0 +1,18 @@
+{
+  "name": "super-projet-server",
+  "version": "1.0.0",
+  "description": "Serveur Express pour servir les pages HTML du projet Super-Projet",
+  "main": "server.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.81.1",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

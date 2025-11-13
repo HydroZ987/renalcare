@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messagerie - Suivi Greffe Rénale</title>
+    <link rel="stylesheet" href="../../style/patient.css">
+    <script src="/js/sidebar.js" defer></script>
+</head>
+
+<body>
+    <div class="dashboard">
+        <div data-sidebar="patient" data-active="messagerie"></div>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>Messagerie</h1>
+                    <p>Échangez avec votre équipe médicale</p>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="messaging-container">
+                    <div class="conversations-panel">
+                        <div class="panel-header">
+                            <h2>Messages</h2>
+                            <input type="text" class="search-box" placeholder="Rechercher...">
+                        </div>
+
+                        <div class="conversations-list">
+                            <div class="conversation-item active unread">
+                                <div class="conversation-avatar">DR</div>
+                                <div class="conversation-content">
+                                    <div class="conversation-header">
+                                        <span class="conversation-name">Dr. Jean Dubois</span>
+                                        <span class="conversation-time">Il y a 2h</span>
+                                    </div>
+                                    <div class="conversation-preview">
+                                        Bonjour Sophie, j'ai bien reçu vos derniers résultats...
+                                    </div>
+                                </div>
+                                <div class="unread-badge">1</div>
+                            </div>
+
+                            <div class="conversation-item unread">
+                                <div class="conversation-avatar">IF</div>
+                                <div class="conversation-content">
+                                    <div class="conversation-header">
+                                        <span class="conversation-name">Inf. Claire Robert</span>
+                                        <span class="conversation-time">Hier</span>
+                                    </div>
+                                    <div class="conversation-preview">
+                                        N'oubliez pas de remplir votre questionnaire...
+                                    </div>
+                                </div>
+                                <div class="unread-badge">1</div>
+                            </div>
+
+                            <div class="conversation-item">
+                                <div class="conversation-avatar">PH</div>
+                                <div class="conversation-content">
+                                    <div class="conversation-header">
+                                        <span class="conversation-name">Pharmacie Hôpital</span>
+                                        <span class="conversation-time">2 jours</span>
+                                    </div>
+                                    <div class="conversation-preview">
+                                        Votre ordonnance est prête à être retirée
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="conversation-item">
+                                <div class="conversation-avatar">LA</div>
+                                <div class="conversation-content">
+                                    <div class="conversation-header">
+                                        <span class="conversation-name">Laboratoire</span>
+                                        <span class="conversation-time">3 jours</span>
+                                    </div>
+                                    <div class="conversation-preview">
+                                        Vos résultats d'analyse sont disponibles
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="conversation-item">
+                                <div class="conversation-avatar">SE</div>
+                                <div class="conversation-content">
+                                    <div class="conversation-header">
+                                        <span class="conversation-name">Secrétariat</span>
+                                        <span class="conversation-time">1 semaine</span>
+                                    </div>
+                                    <div class="conversation-preview">
+                                        Confirmation de votre rendez-vous du 5 novembre
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-panel">
+                        <div class="chat-header">
+                            <div class="chat-avatar">DR</div>
+                            <div class="chat-info">
+                                <h3>Dr. Jean Dubois</h3>
+                                <p>Néphrologue - Service Transplantation</p>
+                            </div>
+                        </div>
+
+                        <div class="chat-messages">
+                            <div class="message-group">
+                                <div class="message-date">Aujourd'hui</div>
+
+                                <div class="message">
+                                    <div class="message-avatar">DR</div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">
+                                            Bonjour Sophie, j'ai bien reçu vos derniers résultats. Votre taux de
+                                            créatinine est préoccupant (245 mg/L). Je souhaiterais vous voir cette
+                                            semaine.
+                                        </div>
+                                        <div class="message-time">Il y a 2h</div>
+                                    </div>
+                                </div>
+
+                                <div class="message">
+                                    <div class="message-avatar">DR</div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">
+                                            Pouvez-vous prendre rendez-vous avec le secrétariat dans les prochains jours
+                                            ? Nous devons ajuster votre traitement.
+                                        </div>
+                                        <div class="message-time">Il y a 2h</div>
+                                    </div>
+                                </div>
+
+                                <div class="message sent">
+                                    <div class="message-avatar">SM</div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">
+                                            Bonjour Docteur, merci pour votre message. Je vais appeler le secrétariat
+                                            dès aujourd'hui.
+                                        </div>
+                                        <div class="message-time">Il y a 1h</div>
+                                    </div>
+                                </div>
+
+                                <div class="message sent">
+                                    <div class="message-avatar">SM</div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">
+                                            J'ai remarqué une fatigue inhabituelle ces derniers jours. Est-ce lié à ces
+                                            résultats ?
+                                        </div>
+                                        <div class="message-time">Il y a 1h</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="message-group">
+                                <div class="message-date">Hier</div>
+
+                                <div class="message">
+                                    <div class="message-avatar">DR</div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">
+                                            Bonjour Sophie, comment vous sentez-vous aujourd'hui ?
+                                        </div>
+                                        <div class="message-time">16:30</div>
+                                    </div>
+                                </div>
+
+                                <div class="message sent">
+                                    <div class="message-avatar">SM</div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">
+                                            Bonjour, je me sens un peu fatiguée mais ça va globalement.
+                                        </div>
+                                        <div class="message-time">17:15</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-container">
+                            <div class="chat-input-wrapper">
+                                <input type="text" class="chat-input" placeholder="Écrivez votre message...">
+                                <button class="send-button">➤</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
