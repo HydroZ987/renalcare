@@ -52,7 +52,7 @@ htmlRoutes.forEach(({ paths, file }) => {
 
 // Routes API
 const patientRoutes = require('./routes/patientRoutes');
-const authRoutes = require('./routes/authRoutes');
+const authRoutes = require('./routes/authRoutes_improved');
 
 app.use('/api/patients', patientRoutes);
 app.use('/api/auth', authRoutes);
