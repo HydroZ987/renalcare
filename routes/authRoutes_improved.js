@@ -204,33 +204,43 @@ router.post('/login', async (req, res) => {
   const { email, password, securite_sociale } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ error: 'Email et mot de passe requis.' });
+    return res.status(400).json({ success: false, error: 'Email et mot de passe requis.' });
   }
 
   try {
-    // Chercher l'utilisateur dans la table
-    const { data: dbUser, error: dbError } = await supabase
-      .from('utilisateur')
-      .select('*')
-      .eq('email', email)
-      .single();
+    // Nettoyer le numéro de sécurité sociale si fourni (vérifier que c'est une string)
+    const cleanSecuriteSociale = securite_sociale && typeof securite_sociale === 'string' 
+      ? securite_sociale.replace(/\s/g, '') 
+      : (securite_sociale || null);
 
-    if (!dbUser || dbUser.mdp !== password) {
-      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+    // Chercher l'utilisateur dans la table
+    const users = await sql`SELECT * FROM utilisateur WHERE email = ${email}`;
+
+    if (!users || users.length === 0) {
+      return res.status(401).json({ success: false, error: 'Email ou mot de passe incorrect' });
+    }
+
+    const dbUser = users[0];
+
+    // Vérifier le mot de passe (en clair pour l'instant)
+    if (dbUser.mdp !== password) {
+      return res.status(401).json({ success: false, error: 'Email ou mot de passe incorrect' });
     }
 
     // Vérifier le numéro de sécurité sociale si fourni
-    if (securite_sociale && dbUser.securite_sociale != securite_sociale) {
-      return res.status(401).json({ error: 'Numéro de sécurité sociale incorrect' });
+    if (cleanSecuriteSociale && dbUser.securite_sociale != cleanSecuriteSociale) {
+      return res.status(401).json({ success: false, error: 'Numéro de sécurité sociale incorrect' });
     }
 
     // Déterminer le rôle basé sur id_utilisateur_medecin
     let role = 'patient';
-    if (dbUser.id_utilisateur_medecin === 1) {
+    const idMedecin = parseInt(dbUser.id_utilisateur_medecin);
+    
+    if (idMedecin === 1) {
       role = 'medecin';
-    } else if (dbUser.id_utilisateur_medecin === 3) {
+    } else if (idMedecin === 3) {
       role = 'admin';
-    } else if (dbUser.id_utilisateur_medecin === 2) {
+    } else if (idMedecin === 2) {
       role = 'patient';
     }
 
@@ -249,7 +259,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     console.error('Erreur login', err);
-    res.status(500).json({ error: 'Connexion impossible pour le moment.' });
+    res.status(500).json({ success: false, error: 'Connexion impossible pour le moment.' });
   }
 });
 
@@ -257,62 +267,77 @@ router.post('/login', async (req, res) => {
 
 // Inscription Médecin
 router.post('/medecin/register', async (req, res) => {
-  const {
-    email,
-    password,
-    full_name,
-    specialite,
-    phone,
-    adresse,
-    numero_licence,
-  } = req.body;
+  const { email, password, securite_sociale, nom, prenom, telephone, adresse } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email et mot de passe requis.' });
+  // Validation
+  if (!email || !password || !securite_sociale) {
+    return res.status(400).json({ 
+      success: false,
+      error: 'Email, mot de passe et numéro de sécurité sociale sont requis.' 
+    });
   }
 
   if (password.length < 6) {
-    return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères.' });
+    return res.status(400).json({ 
+      success: false,
+      error: 'Le mot de passe doit contenir au moins 6 caractères.' 
+    });
   }
 
   try {
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: false,
-      user_metadata: {
-        role: 'medecin',
-      },
-    });
+    // Nettoyer le numéro de sécurité sociale (enlever les espaces)
+    const cleanSecuriteSociale = securite_sociale.replace(/\s/g, '');
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
+    // Vérifier si l'email existe déjà
+    const existingUsers = await sql`SELECT * FROM utilisateur WHERE email = ${email}`;
+
+    if (existingUsers.length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Cet email n\'existe pas. Veuillez vérifier votre email ou contacter l\'administrateur.' 
+      });
     }
 
-    await supabase
-      .from('medecin_profiles')
-      .upsert(
-        {
-          auth_id: data.user.id,
-          email,
-          full_name,
-          specialite,
-          phone,
-          adresse,
-          numero_licence,
-          created_at: new Date().toISOString(),
-        },
-        { onConflict: 'auth_id' }
-      );
+    // UPDATE l'utilisateur existant avec le nouveau mot de passe, numéro de sécurité sociale et infos complètes
+    const updatedUsers = await sql`
+      UPDATE utilisateur 
+      SET mdp = ${password}, 
+          securite_sociale = ${cleanSecuriteSociale},
+          nom = ${nom || 'À compléter'},
+          prenom = ${prenom || 'À compléter'},
+          telephone = ${telephone || '0123456789'},
+          adresse_postale = ${adresse || 'À compléter'}
+      WHERE email = ${email}
+      RETURNING id, email, prenom, nom, id_utilisateur_medecin
+    `;
 
-    res.status(201).json({
+    if (!updatedUsers || updatedUsers.length === 0) {
+      return res.status(500).json({ 
+        success: false,
+        error: 'Erreur lors de la mise à jour du compte.' 
+      });
+    }
+
+    const user = updatedUsers[0];
+
+    res.status(200).json({
       success: true,
-      message: 'Médecin créé avec succès',
-      userId: data.user.id,
+      message: 'Inscription réussie ! Vous pouvez maintenant vous connecter.',
+      user: {
+        id: user.id,
+        email: user.email,
+        prenom: user.prenom,
+        nom: user.nom,
+        role: 'medecin'
+      }
     });
+
   } catch (err) {
-    console.error('Erreur inscription médecin', err);
-    res.status(500).json({ error: 'Inscription impossible pour le moment.' });
+    console.error('Erreur inscription médecin:', err);
+    res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de l\'inscription. Veuillez réessayer plus tard.' 
+    });
   }
 });
 

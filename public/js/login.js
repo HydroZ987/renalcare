@@ -81,7 +81,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
   } catch (error) {
     console.error('Erreur:', error);
-    showError(error.message);
+    //showError(error.message);
   } finally {
     // Réinitialiser le bouton
     btn.textContent = originalText;
@@ -91,7 +91,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
 function showError(message) {
   const errorDiv = document.getElementById('errorMessage');
-  errorDiv.textContent = '❌ ' + message;
+  errorDiv.textContent = message;
   errorDiv.classList.add('show');
 }
 

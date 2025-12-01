@@ -772,8 +772,16 @@
         // Logout function
         function logout() {
             if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                alert('Déconnexion réussie. Redirection vers la page de connexion...');
-                // Redirect to login page
+                // Nettoyer le localStorage
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_id');
+                localStorage.removeItem('user_email');
+                localStorage.removeItem('user_role');
+                localStorage.removeItem('user_name');
+                localStorage.removeItem('user_profile');
+                
+                // Rediriger vers la page de login
+                window.location.href = '/login';
             }
         }
 
