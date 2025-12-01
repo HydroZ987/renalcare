@@ -1,163 +1,207 @@
 const express = require('express');
 const { supabase, supabaseAdmin } = require('../services/supabaseClient');
 const { verifyToken, verifyRole } = require('../middleware/auth');
+const sql = require('../db');
+const bcrypt = require('bcrypt');
 
 const router = express.Router();
 
-// ===== MEDECIN =====
+// ===== CONNEXION UNIFIÉE (Auto-détection du rôle) =====
 
-// Connexion Médecin
-router.post('/medecin/login', async (req, res) => {
-  const { email, password } = req.body;
+// Connexion unifiée
+// ===== INSCRIPTION UNIFIÉE =====
+router.post('/register', async (req, res) => {
+  const { email, password, securite_sociale, role, telephone } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email et mot de passe requis.' });
-  }
-
-  try {
-    // Vérifier dans la table utilisateur avec id_utilisateur_medecin = 1 (médecin)
-    const { data: dbUser, error: dbError } = await supabase
-      .from('utilisateur')
-      .select('*')
-      .eq('email', email)
-      .eq('id_utilisateur_medecin', 1)
-      .single();
-
-    if (dbUser && dbUser.mdp === password) {
-      // Connexion réussie via table utilisateur
-      return res.status(200).json({
-        success: true,
-        message: 'Connexion médecin réussie',
-        user: {
-          id: dbUser.id,
-          email: dbUser.email,
-          nom: dbUser.nom,
-          prenom: dbUser.prenom,
-          role: 'medecin',
-          profile: dbUser,
-        },
-      });
-    }
-
-    return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-  } catch (err) {
-    console.error('Erreur login médecin', err);
-    res.status(500).json({ error: 'Connexion impossible pour le moment.' });
-  }
-});
-
-// ===== ADMIN =====
-
-// Connexion Admin
-router.post('/admin/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email et mot de passe requis.' });
-  }
-
-  try {
-    // Vérifier dans la table utilisateur avec id_utilisateur_medecin = 3
-    const { data: dbUser, error: dbError } = await supabase
-      .from('utilisateur')
-      .select('*')
-      .eq('email', email)
-      .eq('id_utilisateur_medecin', 3)
-      .single();
-
-    if (dbUser && dbUser.mdp === password) {
-      // Connexion réussie via table utilisateur
-      return res.status(200).json({
-        success: true,
-        message: 'Connexion admin réussie',
-        user: {
-          id: dbUser.id,
-          email: dbUser.email,
-          nom: dbUser.nom,
-          prenom: dbUser.prenom,
-          role: 'admin',
-          profile: dbUser,
-        },
-      });
-    }
-
-    return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-  } catch (err) {
-    console.error('Erreur login admin', err);
-    res.status(500).json({ error: 'Connexion impossible pour le moment.' });
-  }
-});
-
-// ===== PATIENT =====
-
-// Inscription Patient
-router.post('/patient/register', async (req, res) => {
-  const {
-    email,
-    password,
-    phone,
-    secu_number,
-    address,
-    birth_date,
-    height_cm,
-    full_name,
-  } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email et mot de passe requis.' });
+  // Validation
+  if (!email || !password || !securite_sociale || !role) {
+    return res.status(400).json({ 
+      success: false,
+      error: 'Email, mot de passe, numéro de sécurité sociale et rôle sont requis.' 
+    });
   }
 
   if (password.length < 6) {
-    return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères.' });
+    return res.status(400).json({ 
+      success: false,
+      error: 'Le mot de passe doit contenir au moins 6 caractères.' 
+    });
+  }
+
+  if (!['patient', 'medecin', 'admin'].includes(role)) {
+    return res.status(400).json({ 
+      success: false,
+      error: 'Rôle invalide.' 
+    });
   }
 
   try {
-    // Créer l'utilisateur
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: false,
-      user_metadata: {
-        role: 'patient',
-        phone,
-      },
-    });
+    // Vérifier si l'email existe déjà
+    const existingUsers = await sql`SELECT * FROM utilisateur WHERE email = ${email}`;
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Cet email est déjà utilisé.' 
+      });
     }
 
-    // Créer le profil patient
-    await supabase
-      .from('patient_profiles')
-      .upsert(
-        {
-          auth_id: data.user.id,
-          email,
-          full_name: full_name || null,
-          phone,
-          secu_number,
-          address,
-          birth_date,
-          height_cm,
-          created_at: new Date().toISOString(),
-        },
-        { onConflict: 'auth_id' }
-      );
+    // Hasher le mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Déterminer l'id_utilisateur_medecin selon le rôle
+    let id_utilisateur_medecin;
+    if (role === 'patient') {
+      id_utilisateur_medecin = 2;
+    } else if (role === 'medecin') {
+      id_utilisateur_medecin = 1;
+    } else if (role === 'admin') {
+      id_utilisateur_medecin = 3;
+    }
+
+    // Générer des valeurs aléatoires pour les champs manquants
+    const sexes = [0, 1];
+    const sexe = sexes[Math.floor(Math.random() * sexes.length)];
+    
+    const adresses = [
+      '123 Rue de la Paix, 75001 Paris',
+      '456 Avenue des Champs, 75008 Paris',
+      '789 Boulevard Saint-Germain, 75005 Paris',
+      '321 Rue du Faubourg, 75009 Paris',
+      '654 Avenue Montaigne, 75008 Paris'
+    ];
+    const adresse_postale = adresses[Math.floor(Math.random() * adresses.length)];
+
+    // Générer une date de naissance aléatoire (entre 18 et 80 ans)
+    const today = new Date();
+    const birthDate = new Date(
+      today.getFullYear() - Math.floor(Math.random() * 62) - 18,
+      Math.floor(Math.random() * 12),
+      Math.floor(Math.random() * 28) + 1
+    );
+    const date_naissance = birthDate.toISOString().split('T')[0];
+
+    // Utiliser le téléphone passé ou une valeur par défaut
+    const phone = telephone || '0123456789';
+
+    // Insérer le nouvel utilisateur
+    const newUsers = await sql`
+      INSERT INTO utilisateur (email, mdp, securite_sociale, id_utilisateur_medecin, prenom, nom, date_naissance, sexe, telephone, adresse_postale)
+      VALUES (${email}, ${hashedPassword}, ${securite_sociale}, ${id_utilisateur_medecin}, 'À', 'compléter', ${date_naissance}, ${sexe}, ${phone}, ${adresse_postale})
+      RETURNING id, email, prenom, nom, id_utilisateur_medecin
+    `;
+
+    if (!newUsers || newUsers.length === 0) {
+      return res.status(500).json({ 
+        success: false,
+        error: 'Erreur lors de la création du compte.' 
+      });
+    }
+
+    const user = newUsers[0];
+
+    // TODO: Envoyer un email de confirmation
+    console.log(`Email de confirmation devrait être envoyé à ${email}`);
 
     res.status(201).json({
       success: true,
-      message: 'Patient créé avec succès',
-      userId: data.user.id,
+      message: 'Inscription réussie ! Un email de confirmation a été envoyé.',
+      user: {
+        id: user.id,
+        email: user.email,
+        prenom: user.prenom,
+        nom: user.nom,
+        role: role
+      }
     });
+
   } catch (err) {
-    console.error('Erreur inscription patient', err);
-    res.status(500).json({ error: 'Inscription impossible pour le moment.' });
+    console.error('Erreur inscription:', err);
+    res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de l\'inscription. Veuillez réessayer plus tard.' 
+    });
   }
 });
 
-// Connexion Patient
-router.post('/patient/login', async (req, res) => {
+// ===== INSCRIPTION PATIENT (formulaire d'auto-inscription) =====
+router.post('/patient/register', async (req, res) => {
+  const { email, password, securite_sociale, nom, prenom, telephone, adresse } = req.body;
+
+  // Validation
+  if (!email || !password || !securite_sociale) {
+    return res.status(400).json({ 
+      success: false,
+      error: 'Email, mot de passe et numéro de sécurité sociale sont requis.' 
+    });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ 
+      success: false,
+      error: 'Le mot de passe doit contenir au moins 6 caractères.' 
+    });
+  }
+
+  try {
+    // Vérifier si l'email existe déjà
+    const existingUsers = await sql`SELECT * FROM utilisateur WHERE email = ${email}`;
+
+    if (existingUsers.length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Cet email n\'existe pas. Veuillez vérifier votre email ou contacter l\'administrateur.' 
+      });
+    }
+
+    // Hasher le mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // UPDATE l'utilisateur existant avec le nouveau mot de passe, numéro de sécurité sociale et infos complètes
+    const updatedUsers = await sql`
+      UPDATE utilisateur 
+      SET mdp = ${hashedPassword}, 
+          securite_sociale = ${securite_sociale},
+          nom = ${nom || 'À compléter'},
+          prenom = ${prenom || 'À compléter'},
+          telephone = ${telephone || '0123456789'},
+          adresse_postale = ${adresse || 'À compléter'}
+      WHERE email = ${email}
+      RETURNING id, email, prenom, nom, id_utilisateur_medecin
+    `;
+
+    if (!updatedUsers || updatedUsers.length === 0) {
+      return res.status(500).json({ 
+        success: false,
+        error: 'Erreur lors de la mise à jour du compte.' 
+      });
+    }
+
+    const user = updatedUsers[0];
+
+    res.status(200).json({
+      success: true,
+      message: 'Inscription réussie ! Vous pouvez maintenant vous connecter.',
+      user: {
+        id: user.id,
+        email: user.email,
+        prenom: user.prenom,
+        nom: user.nom,
+        role: 'patient'
+      }
+    });
+
+  } catch (err) {
+    console.error('Erreur inscription patient:', err);
+    res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de l\'inscription. Veuillez réessayer plus tard.' 
+    });
+  }
+});
+
+// ===== LOGIN ROUTES =====
+router.post('/login', async (req, res) => {
   const { email, password, securite_sociale } = req.body;
 
   if (!email || !password) {
@@ -165,71 +209,47 @@ router.post('/patient/login', async (req, res) => {
   }
 
   try {
-    // Vérifier d'abord dans la table utilisateur
+    // Chercher l'utilisateur dans la table
     const { data: dbUser, error: dbError } = await supabase
       .from('utilisateur')
       .select('*')
       .eq('email', email)
       .single();
 
-    if (dbUser && dbUser.mdp === password) {
-      // Vérifier le numéro de sécurité sociale si fourni
-      if (securite_sociale && dbUser.securite_sociale != securite_sociale) {
-        return res.status(401).json({ error: 'Numéro de sécurité sociale incorrect' });
-      }
-
-      // Connexion réussie via table utilisateur
-      return res.status(200).json({
-        success: true,
-        message: 'Connexion réussie',
-        user: {
-          id: dbUser.id,
-          email: dbUser.email,
-          nom: dbUser.nom,
-          prenom: dbUser.prenom,
-          role: 'patient',
-          profile: dbUser,
-        },
-      });
+    if (!dbUser || dbUser.mdp !== password) {
+      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
 
-    // Si pas trouvé dans utilisateur, essayer Supabase Auth
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (!error && data.user) {
-        const { data: profile } = await supabase
-          .from('patient_profiles')
-          .select('*')
-          .eq('email', email)
-          .single();
-
-        return res.status(200).json({
-          success: true,
-          message: 'Connexion réussie',
-          session: {
-            access_token: data.session.access_token,
-            refresh_token: data.session.refresh_token,
-            expires_in: data.session.expires_in,
-          },
-          user: {
-            id: data.user.id,
-            email: data.user.email,
-            role: 'patient',
-            profile: profile || null,
-          },
-        });
-      }
-    } catch (authError) {
-      console.log('Auth Supabase échoué');
+    // Vérifier le numéro de sécurité sociale si fourni
+    if (securite_sociale && dbUser.securite_sociale != securite_sociale) {
+      return res.status(401).json({ error: 'Numéro de sécurité sociale incorrect' });
     }
 
-    return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+    // Déterminer le rôle basé sur id_utilisateur_medecin
+    let role = 'patient';
+    if (dbUser.id_utilisateur_medecin === 1) {
+      role = 'medecin';
+    } else if (dbUser.id_utilisateur_medecin === 3) {
+      role = 'admin';
+    } else if (dbUser.id_utilisateur_medecin === 2) {
+      role = 'patient';
+    }
+
+    // Connexion réussie
+    return res.status(200).json({
+      success: true,
+      message: 'Connexion réussie',
+      user: {
+        id: dbUser.id,
+        email: dbUser.email,
+        nom: dbUser.nom,
+        prenom: dbUser.prenom,
+        role: role,
+        profile: dbUser,
+      },
+    });
   } catch (err) {
-    console.error('Erreur login patient', err);
+    console.error('Erreur login', err);
     res.status(500).json({ error: 'Connexion impossible pour le moment.' });
   }
 });
@@ -294,96 +314,6 @@ router.post('/medecin/register', async (req, res) => {
   } catch (err) {
     console.error('Erreur inscription médecin', err);
     res.status(500).json({ error: 'Inscription impossible pour le moment.' });
-  }
-});
-
-// Connexion Médecin
-router.post('/medecin/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email et mot de passe requis.' });
-  }
-
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-    }
-
-    const { data: profile } = await supabase
-      .from('medecin_profiles')
-      .select('*')
-      .eq('auth_id', data.user.id)
-      .single();
-
-    res.status(200).json({
-      success: true,
-      message: 'Connexion réussie',
-      session: {
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token,
-        expires_in: data.session.expires_in,
-      },
-      user: {
-        id: data.user.id,
-        email: data.user.email,
-        role: 'medecin',
-        profile: profile || null,
-      },
-    });
-  } catch (err) {
-    console.error('Erreur login médecin', err);
-    res.status(500).json({ error: 'Connexion impossible pour le moment.' });
-  }
-});
-
-// ===== ADMIN =====
-
-// Connexion Admin
-router.post('/admin/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email et mot de passe requis.' });
-  }
-
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
-    }
-
-    // Vérifier que l'utilisateur est admin
-    if (data.user.user_metadata?.role !== 'admin') {
-      return res.status(403).json({ error: 'Accès refusé' });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Connexion réussie',
-      session: {
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token,
-        expires_in: data.session.expires_in,
-      },
-      user: {
-        id: data.user.id,
-        email: data.user.email,
-        role: 'admin',
-      },
-    });
-  } catch (err) {
-    console.error('Erreur login admin', err);
-    res.status(500).json({ error: 'Connexion impossible pour le moment.' });
   }
 });
 

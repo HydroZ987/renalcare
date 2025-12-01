@@ -22,6 +22,7 @@ const serveHtml = (relativePath) => (req, res) =>
 
 const htmlRoutes = [
   { paths: ['/'], file: 'index.html' },
+  { paths: ['/login'], file: 'login.html' },
   { paths: ['/admin'], file: 'admin/admin-dashboard-complet.html' },
   { paths: ['/admin/login'], file: 'admin/admin-login.html' },
   { paths: ['/medecin/dashboard'], file: 'Medecin/medecin-dashboard-complet.html' },

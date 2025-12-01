@@ -1,14 +1,13 @@
-// Charger les informations de l'utilisateur connecté
+// Charger les informations de l'utilisateur connecté (Médecin)
 document.addEventListener('DOMContentLoaded', () => {
   // Récupérer les données du localStorage
   const userName = localStorage.getItem('user_name');
   const userEmail = localStorage.getItem('user_email');
   const userRole = localStorage.getItem('user_role');
-  const userProfile = localStorage.getItem('user_profile');
 
-  // Vérifier que l'utilisateur est connecté
-  if (!userName || userRole !== 'patient') {
-    // Rediriger vers la page de connexion si pas de session
+  // Vérifier que l'utilisateur est connecté et est un médecin
+  if (!userName || userRole !== 'medecin') {
+    // Rediriger vers la page de connexion si pas de session valide
     window.location.href = '/login';
     return;
   }
@@ -20,9 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const initials = (prenom.charAt(0) + (nom.charAt(0) || '')).toUpperCase();
 
   // Mettre à jour le titre de bienvenue
-  const welcomeTitle = document.querySelector('.header-left h1');
-  if (welcomeTitle) {
-    welcomeTitle.textContent = `Bonjour, ${prenom} ${nom}`;
+  const pageTitle = document.getElementById('pageTitle');
+  if (pageTitle) {
+    pageTitle.textContent = `Bonjour, Dr. ${nom}`;
   }
 
   // Mettre à jour le profil utilisateur dans le header
@@ -33,22 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const userNameHeader = document.querySelector('.user-info h3');
   if (userNameHeader) {
-    userNameHeader.textContent = `${prenom} ${nom}`;
+    userNameHeader.textContent = `Dr. ${nom}`;
   }
 
   const userStatusHeader = document.querySelector('.user-info p');
   if (userStatusHeader) {
-    userStatusHeader.textContent = 'Patient';
-  }
-
-  // Parser le profil si disponible
-  if (userProfile) {
-    try {
-      const profile = JSON.parse(userProfile);
-      console.log('Profil utilisateur chargé:', profile);
-    } catch (err) {
-      console.error('Erreur parsing profil:', err);
-    }
+    userStatusHeader.textContent = 'Médecin';
   }
 
   // Bouton de déconnexion
