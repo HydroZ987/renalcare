@@ -2,7 +2,6 @@ const express = require('express');
 const { supabase, supabaseAdmin } = require('../services/supabaseClient');
 const { verifyToken, verifyRole } = require('../middleware/auth');
 const sql = require('../db');
-const bcrypt = require('bcrypt');
 
 const router = express.Router();
 
@@ -36,6 +35,9 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    // Nettoyer le numéro de sécurité sociale (enlever les espaces)
+    const cleanSecuriteSociale = securite_sociale.replace(/\s/g, '');
+
     // Vérifier si l'email existe déjà
     const existingUsers = await sql`SELECT * FROM utilisateur WHERE email = ${email}`;
 
@@ -45,9 +47,6 @@ router.post('/register', async (req, res) => {
         error: 'Cet email est déjà utilisé.' 
       });
     }
-
-    // Hasher le mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Déterminer l'id_utilisateur_medecin selon le rôle
     let id_utilisateur_medecin;
@@ -87,7 +86,7 @@ router.post('/register', async (req, res) => {
     // Insérer le nouvel utilisateur
     const newUsers = await sql`
       INSERT INTO utilisateur (email, mdp, securite_sociale, id_utilisateur_medecin, prenom, nom, date_naissance, sexe, telephone, adresse_postale)
-      VALUES (${email}, ${hashedPassword}, ${securite_sociale}, ${id_utilisateur_medecin}, 'À', 'compléter', ${date_naissance}, ${sexe}, ${phone}, ${adresse_postale})
+      VALUES (${email}, ${password}, ${cleanSecuriteSociale}, ${id_utilisateur_medecin}, 'À', 'compléter', ${date_naissance}, ${sexe}, ${phone}, ${adresse_postale})
       RETURNING id, email, prenom, nom, id_utilisateur_medecin
     `;
 
@@ -144,6 +143,9 @@ router.post('/patient/register', async (req, res) => {
   }
 
   try {
+    // Nettoyer le numéro de sécurité sociale (enlever les espaces)
+    const cleanSecuriteSociale = securite_sociale.replace(/\s/g, '');
+
     // Vérifier si l'email existe déjà
     const existingUsers = await sql`SELECT * FROM utilisateur WHERE email = ${email}`;
 
@@ -154,14 +156,11 @@ router.post('/patient/register', async (req, res) => {
       });
     }
 
-    // Hasher le mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // UPDATE l'utilisateur existant avec le nouveau mot de passe, numéro de sécurité sociale et infos complètes
     const updatedUsers = await sql`
       UPDATE utilisateur 
-      SET mdp = ${hashedPassword}, 
-          securite_sociale = ${securite_sociale},
+      SET mdp = ${password}, 
+          securite_sociale = ${cleanSecuriteSociale},
           nom = ${nom || 'À compléter'},
           prenom = ${prenom || 'À compléter'},
           telephone = ${telephone || '0123456789'},
