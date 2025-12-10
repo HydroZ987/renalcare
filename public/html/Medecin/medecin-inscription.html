@@ -431,6 +431,7 @@
         }
     </style>
 </head>
+<body data-role="medecin">
 <body>
     <div class="container">
         <div class="header">
@@ -730,138 +731,195 @@
     </div>
 
     <script>
-        let currentStep = 1;
+    const ROLE = document.body.dataset.role || 'medecin';
+    const registrationData = { role: ROLE };
 
-        function updateProgress() {
-            document.querySelectorAll('.progress-step').forEach(step => {
-                const stepNum = parseInt(step.dataset.step);
-                step.classList.remove('active', 'completed');
-                
-                if (stepNum === currentStep) {
-                    step.classList.add('active');
-                } else if (stepNum < currentStep) {
-                    step.classList.add('completed');
-                }
+    // Éléments du formulaire
+    const registrationForm = document.getElementById('registrationForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const numSecuInput = document.getElementById('numSecu');
+    const registerBtn = document.querySelector('.btn-register');
+    const errorDiv = document.getElementById('errorMessage');
+    const successDiv = document.getElementById('successMessage');
+
+    function showError(message) {
+        errorDiv.textContent = message;
+        errorDiv.classList.add('show');
+        successDiv.classList.remove('show');
+    }
+
+    function showSuccess(message) {
+        successDiv.textContent = message;
+        successDiv.classList.add('show');
+        errorDiv.classList.remove('show');
+    }
+
+    // === ÉTAPE 1: Envoi du code OTP ===
+    registrationForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        const numSecu = numSecuInput.value.trim();
+
+        if (!email || !password || !numSecu) {
+            showError('Tous les champs sont obligatoires');
+            return;
+        }
+
+        if (password.length < 6) {
+            showError('Le mot de passe doit contenir au moins 6 caractères');
+            return;
+        }
+
+        registrationData.email = email;
+        registrationData.password = password;
+        registrationData.num_secu = numSecu;
+
+        registerBtn.textContent = 'Envoi du code...';
+        registerBtn.disabled = true;
+
+        try {
+            const res = await fetch('/api/register/send-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, role: ROLE }),
             });
+            const data = await res.json();
 
-            document.querySelectorAll('.form-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            document.querySelector(`[data-section="${currentStep}"]`).classList.add('active');
-        }
-
-        function nextStep() {
-            if (currentStep < 5) {
-                currentStep++;
-                updateProgress();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        function prevStep() {
-            if (currentStep > 1) {
-                currentStep--;
-                updateProgress();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        // Validation du mot de passe en temps réel
-        const passwordInput = document.getElementById('password');
-        const passwordConfirmInput = document.getElementById('password_confirm');
-
-        function validatePassword() {
-            const password = passwordInput.value;
-            const passwordConfirm = passwordConfirmInput.value;
-
-            const hasLength = password.length >= 8;
-            const hasUppercase = /[A-Z]/.test(password);
-            const hasLowercase = /[a-z]/.test(password);
-            const hasNumber = /\d/.test(password);
-            const passwordsMatch = password === passwordConfirm && password.length > 0;
-
-            // Mise à jour visuelle des exigences
-            document.getElementById('req-length').className = hasLength ? 'valid' : 'invalid';
-            document.getElementById('req-uppercase').className = hasUppercase ? 'valid' : 'invalid';
-            document.getElementById('req-lowercase').className = hasLowercase ? 'valid' : 'invalid';
-            document.getElementById('req-number').className = hasNumber ? 'valid' : 'invalid';
-            document.getElementById('req-match').className = passwordsMatch ? 'valid' : 'invalid';
-
-            return {
-                isValid: hasLength && hasUppercase && hasLowercase && hasNumber && passwordsMatch,
-                hasLength,
-                hasUppercase,
-                hasLowercase,
-                hasNumber,
-                passwordsMatch
-            };
-        }
-
-        passwordInput.addEventListener('input', validatePassword);
-        passwordConfirmInput.addEventListener('input', validatePassword);
-
-        function validatePasswordAndNext() {
-            const validation = validatePassword();
-            const errorBox = document.getElementById('passwordError');
-            const errorMessage = document.getElementById('errorMessage');
-
-            if (!validation.isValid) {
-                let errors = [];
-                if (!validation.hasLength) errors.push('au moins 8 caractères');
-                if (!validation.hasUppercase) errors.push('une majuscule');
-                if (!validation.hasLowercase) errors.push('une minuscule');
-                if (!validation.hasNumber) errors.push('un chiffre');
-                if (!validation.passwordsMatch && passwordConfirmInput.value) errors.push('les mots de passe doivent être identiques');
-
-                errorMessage.textContent = 'Le mot de passe doit contenir ' + errors.join(', ') + '.';
-                errorBox.style.display = 'block';
-                
-                passwordInput.classList.add('error');
-                if (!validation.passwordsMatch) {
-                    passwordConfirmInput.classList.add('error');
-                }
+            if (!data.success) {
+                showError(data.error || "Erreur lors de l'envoi du code.");
+                registerBtn.textContent = 'S\'inscrire';
+                registerBtn.disabled = false;
                 return;
             }
 
-            errorBox.style.display = 'none';
-            passwordInput.classList.remove('error');
-            passwordConfirmInput.classList.remove('error');
-            nextStep();
-        }
+            showSuccess('✅ Un code de vérification a été envoyé à votre email.');
+            registrationForm.style.display = 'none';
+            showOtpForm();
 
-        // Gestion des codes de vérification
-        const codeInputs = document.querySelectorAll('.code-input');
-        codeInputs.forEach((input, index) => {
+        } catch (err) {
+            console.error(err);
+            showError("Erreur réseau lors de l'envoi du code.");
+            registerBtn.textContent = 'S\'inscrire';
+            registerBtn.disabled = false;
+        }
+    });
+
+    function showOtpForm() {
+        let otpDiv = document.getElementById('otpFormDiv');
+        if (!otpDiv) {
+            otpDiv = document.createElement('div');
+            otpDiv.id = 'otpFormDiv';
+            otpDiv.innerHTML = `
+                <div style="margin-top: 30px;">
+                    <h3 style="text-align: center; margin-bottom: 20px;">Entrez votre code de vérification</h3>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin: 30px 0;">
+                        <input type="text" class="otp-input" maxlength="1" style="width: 40px; height: 40px; text-align: center; font-size: 18px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" class="otp-input" maxlength="1" style="width: 40px; height: 40px; text-align: center; font-size: 18px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" class="otp-input" maxlength="1" style="width: 40px; height: 40px; text-align: center; font-size: 18px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" class="otp-input" maxlength="1" style="width: 40px; height: 40px; text-align: center; font-size: 18px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" class="otp-input" maxlength="1" style="width: 40px; height: 40px; text-align: center; font-size: 18px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" class="otp-input" maxlength="1" style="width: 40px; height: 40px; text-align: center; font-size: 18px; border: 2px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <button type="button" id="verifyOtpBtn" class="btn-register" style="width: 100%; margin-top: 20px;">Vérifier le code</button>
+                    <button type="button" id="backBtn" class="btn-register" style="width: 100%; margin-top: 10px; background-color: #999;">Retour</button>
+                </div>
+            `;
+            registrationForm.parentNode.insertBefore(otpDiv, registrationForm.nextSibling);
+        }
+        otpDiv.style.display = 'block';
+
+        const otpInputs = otpDiv.querySelectorAll('.otp-input');
+        otpInputs.forEach((input, index) => {
             input.addEventListener('input', function(e) {
-                if (e.target.value.length === 1 && index < codeInputs.length - 1) {
-                    codeInputs[index + 1].focus();
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
                 }
             });
-
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
-                    codeInputs[index - 1].focus();
+                    otpInputs[index - 1].focus();
                 }
             });
         });
 
-        // Soumission du formulaire
-        document.getElementById('inscriptionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-            
-            console.log('Données d\'inscription médecin:', data);
-            
-            currentStep = 5;
-            updateProgress();
-            
-            setTimeout(() => {
-                alert('Redirection vers la page de connexion...');
-            }, 3000);
+        document.getElementById('verifyOtpBtn').addEventListener('click', verifyOtp);
+        document.getElementById('backBtn').addEventListener('click', () => {
+            registrationForm.style.display = 'block';
+            otpDiv.style.display = 'none';
+            registerBtn.textContent = 'S\'inscrire';
+            registerBtn.disabled = false;
         });
-    </script>
+    }
+
+    async function verifyOtp() {
+        const otpDiv = document.getElementById('otpFormDiv');
+        const otpInputs = otpDiv.querySelectorAll('.otp-input');
+        const code = Array.from(otpInputs).map(i => i.value.trim()).join('');
+        
+        if (code.length !== 6) {
+            showError('Merci de saisir les 6 chiffres du code.');
+            return;
+        }
+
+        const verifyBtn = document.getElementById('verifyOtpBtn');
+        verifyBtn.textContent = 'Vérification...';
+        verifyBtn.disabled = true;
+
+        try {
+            const res = await fetch('/api/register/verify-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: registrationData.email, code }),
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                showError(data.error || 'Code incorrect.');
+                verifyBtn.textContent = 'Vérifier le code';
+                verifyBtn.disabled = false;
+                return;
+            }
+
+            showSuccess('✅ Email vérifié ! Création du compte...');
+            completeInscription();
+
+        } catch (err) {
+            console.error(err);
+            showError("Erreur réseau lors de la vérification du code.");
+            verifyBtn.textContent = 'Vérifier le code';
+            verifyBtn.disabled = false;
+        }
+    }
+
+    async function completeInscription() {
+        try {
+            const res = await fetch('/api/register/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(registrationData),
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                showError(data.error || 'Erreur lors de la création du compte.');
+                return;
+            }
+
+            showSuccess('✅ Inscription réussie ! Redirection vers la connexion...');
+            setTimeout(() => {
+                window.location.href = '/medecin/login';
+            }, 2000);
+
+        } catch (err) {
+            console.error(err);
+            showError('Erreur réseau lors de la création du compte.');
+        }
+    }
+
+    console.log('✅ Script inscription médecin chargé pour role:', ROLE);
+</script>
 </body>
 </html>

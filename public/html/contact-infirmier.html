@@ -386,6 +386,16 @@
                         </div>
                     </div>
 
+                    <!-- Type de compte -->
+                    <div class="form-group">
+                        <label for="type">Type de compte *</label>
+                        <select id="type" name="type" required>
+                            <option value="">Sélectionnez un type...</option>
+                            <option value="patient">Patient</option>
+                            <option value="medecin">Médecin</option>
+                        </select>
+                    </div>
+
                     <div class="form-group">
                         <label for="email">Email *</label>
                         <input type="email" id="email" name="email" required>
@@ -398,7 +408,15 @@
 
                     <div class="form-group">
                         <label for="sujet">Sujet *</label>
-                        <input type="text" id="sujet" name="sujet" placeholder="Raison de votre contact" required>
+                        <select id="sujet" name="sujet" required>
+                            <option value="">Sélectionnez un sujet...</option>
+                            <option value="inscription">Inscription</option>
+                            <option value="question">Question générale</option>
+                            <option value="question_medicale">Question médicale</option>
+                            <option value="probleme_connexion">Problème de connexion</option>
+                            <option value="modification_compte">Modification de mon compte</option>
+                            <option value="autre">Autre demande</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -417,30 +435,52 @@
     </footer>
 
     <script>
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
+        document.getElementById('contactForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const formData = {
                 prenom: document.getElementById('prenom').value,
                 nom: document.getElementById('nom').value,
+                type: document.getElementById('type').value,       // patient / medecin
                 email: document.getElementById('email').value,
                 telephone: document.getElementById('telephone').value,
-                sujet: document.getElementById('sujet').value,
+                sujet: document.getElementById('sujet').value,     // inscription, question, ...
                 message: document.getElementById('message').value
             };
-            
-            console.log('Message envoyé:', formData);
-            
-            const successMsg = document.getElementById('successMessage');
-            successMsg.style.display = 'block';
-            
-            this.reset();
-            
-            setTimeout(() => {
-                successMsg.style.display = 'none';
-            }, 5000);
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            try {
+                const res = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    alert("Erreur lors de l'envoi du formulaire.");
+                    return;
+                }
+
+                console.log('Message envoyé:', data.request);
+
+                const successMsg = document.getElementById('successMessage');
+                successMsg.style.display = 'block';
+
+                this.reset();
+                document.getElementById('type').value = "";
+                document.getElementById('sujet').value = "";
+
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 5000);
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (err) {
+                console.error(err);
+                alert("Erreur de communication avec le serveur.");
+            }
         });
     </script>
 </body>
