@@ -240,66 +240,18 @@
                                         <th>Utilisateur</th>
                                         <th>Type</th>
                                         <th>Date demande</th>
-                                        <th>Documents</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <div class="user-cell">
-                                                <div class="user-avatar-small">ML</div>
-                                                <div class="user-details">
-                                                    <h4>Marie Lefebvre</h4>
-                                                    <p>marie.lefebvre@email.fr</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Patient</td>
-                                        <td>15/10/2025</td>
-                                        <td><span class="status-badge status-active">✓ Complet</span></td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="btn-action btn-view"
-                                                    onclick="viewUser('Marie Lefebvre')">👁️</button>
-                                                <button class="btn-action btn-validate"
-                                                    onclick="validatePendingUser(this, 'Marie Lefebvre', 'marie.lefebvre@email.fr')">✓
-                                                    Valider</button>
-                                                <button class="btn-action btn-delete"
-                                                    onclick="rejectUser(this, 'Marie Lefebvre')">✗ Refuser</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="user-cell">
-                                                <div class="user-avatar-small">PD</div>
-                                                <div class="user-details">
-                                                    <h4>Dr. Pierre Durand</h4>
-                                                    <p>p.durand@hopital.fr</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Médecin</td>
-                                        <td>14/10/2025</td>
-                                        <td><span class="status-badge status-active">✓ Complet</span></td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="btn-action btn-view"
-                                                    onclick="viewUser('Dr. Pierre Durand')">👁️</button>
-                                                <button class="btn-action btn-validate"
-                                                    onclick="validatePendingUser(this, 'Dr. Pierre Durand', 'p.durand@hopital.fr')">✓
-                                                    Valider</button>
-                                                <button class="btn-action btn-delete"
-                                                    onclick="rejectUser(this, 'Dr. Pierre Durand')">✗ Refuser</button>
-                                            </div>
-                                        </td>
-                                    </tr>
+
+                                <tbody
+                                 id="pending-requests-body">
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- PAGE 4: STATISTIQUES -->
                 <div id="page-stats" class="page">
@@ -682,156 +634,160 @@
     </div>
 
     <script>
-        // Navigation system
-        function navigateTo(page) {
-            // Hide all pages
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    // Navigation system
+    function navigateTo(page) {
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
 
-            // Show selected page
-            document.getElementById('page-' + page).classList.add('active');
+        // Show selected page
+        document.getElementById('page-' + page).classList.add('active');
 
-            // Update active nav link
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+        // Update active nav link
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        document.querySelector(`[data-page="${page}"]`).classList.add('active');
 
-            // Update page title
-            const titles = {
-                'overview': ['Tableau de bord Administrateur', 'Gestion de la plateforme de suivi post-greffe'],
-                'users': ['Gestion des Utilisateurs', 'Gérer tous les comptes patients et médecins'],
-                'pending': ['Comptes en Attente', 'Valider les nouvelles demandes d\'inscription'],
-                'stats': ['Statistiques', 'Analyses et métriques de la plateforme'],
-                'questionnaires': ['Gestion des Questionnaires', 'Créer et gérer les formulaires de suivi'],
-                'support': ['Support / SAV', 'Gérer les tickets et demandes d\'assistance'],
-                'logs': ['Logs Système', 'Historique des événements système'],
-                'notifications': ['Notifications', 'Centre de notifications administrateur'],
-                'settings': ['Paramètres Système', 'Configuration de la plateforme']
-            };
+        // Update page title
+        const titles = {
+            'overview': ['Tableau de bord Administrateur', 'Gestion de la plateforme de suivi post-greffe'],
+            'users': ['Gestion des Utilisateurs', 'Gérer tous les comptes patients et médecins'],
+            'pending': ['Comptes en Attente', 'Valider les nouvelles demandes d\'inscription'],
+            'stats': ['Statistiques', 'Analyses et métriques de la plateforme'],
+            'questionnaires': ['Gestion des Questionnaires', 'Créer et gérer les formulaires de suivi'],
+            'support': ['Support / SAV', 'Gérer les tickets et demandes d\'assistance'],
+            'logs': ['Logs Système', 'Historique des événements système'],
+            'notifications': ['Notifications', 'Centre de notifications administrateur'],
+            'settings': ['Paramètres Système', 'Configuration de la plateforme']
+        };
 
-            document.getElementById('pageTitle').textContent = titles[page][0];
-            document.getElementById('pageSubtitle').textContent = titles[page][1];
+        document.getElementById('pageTitle').textContent = titles[page][0];
+        document.getElementById('pageSubtitle').textContent = titles[page][1];
 
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (page === 'pending') {
+            loadPendingRequests();
         }
+    }
 
-        let adminNavInitialized = false;
+    let adminNavInitialized = false;
 
-        function bootstrapAdminNavigation() {
-            if (adminNavInitialized) {
-                return true;
-            }
-
-            const navLinks = document.querySelectorAll('.nav-link[data-page]');
-            if (!navLinks.length) {
-                return false;
-            }
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    navigateTo(page);
-                });
-            });
-
-            adminNavInitialized = true;
-            navigateTo('overview');
+    function bootstrapAdminNavigation() {
+        if (adminNavInitialized) {
             return true;
         }
 
-        const handleAdminSidebarLoaded = (event) => {
-            if (event.detail?.type === 'admin') {
-                if (bootstrapAdminNavigation()) {
-                    window.removeEventListener('sidebar:loaded', handleAdminSidebarLoaded);
-                }
-            }
-        };
-
-        window.addEventListener('sidebar:loaded', handleAdminSidebarLoaded);
-
-        if (bootstrapAdminNavigation()) {
-            window.removeEventListener('sidebar:loaded', handleAdminSidebarLoaded);
+        const navLinks = document.querySelectorAll('.nav-link[data-page]');
+        if (!navLinks.length) {
+            return false;
         }
 
-        // Filter users table
-        function filterUsers(type) {
-            const rows = document.querySelectorAll('#page-users tbody tr');
-            rows.forEach(row => {
-                if (type === 'all' || row.getAttribute('data-type') === type) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+        navLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                navigateTo(page);
             });
+        });
 
-            // Update active tab
-            event.target.parentElement.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-        }
+        adminNavInitialized = true;
+        navigateTo('overview');
+        return true;
+    }
 
-        // Logout function
-        function logout() {
-            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                alert('Déconnexion réussie. Redirection vers la page de connexion...');
-                // Redirect to login page
+    const handleAdminSidebarLoaded = (event) => {
+        if (event.detail?.type === 'admin') {
+            if (bootstrapAdminNavigation()) {
+                window.removeEventListener('sidebar:loaded', handleAdminSidebarLoaded);
             }
         }
+    };
 
-        // Modal functions
-        function openCreateUserModal() {
-            document.getElementById('createUserModal').classList.add('active');
-        }
+    window.addEventListener('sidebar:loaded', handleAdminSidebarLoaded);
 
-        function closeCreateUserModal() {
-            document.getElementById('createUserModal').classList.remove('active');
-            document.getElementById('createUserForm').reset();
-        }
+    if (bootstrapAdminNavigation()) {
+        window.removeEventListener('sidebar:loaded', handleAdminSidebarLoaded);
+    }
 
-        // Generate random password
-        function generatePassword() {
-            return Math.random().toString(36).slice(-8);
-        }
-
-        // Generate random security number
-        function generateSecurityNumber() {
-            return Array.from({ length: 15 }, () => Math.floor(Math.random() * 10)).join('');
-        }
-
-        // Create user function
-        function createUser(event) {
-            event.preventDefault();
-
-            const userType = document.getElementById('userType').value;
-            const nom = document.getElementById('userNom').value;
-            const prenom = document.getElementById('userPrenom').value;
-            const email = document.getElementById('userEmail').value;
-            const telephone = document.getElementById('userTelephone').value;
-            const sendCredentials = document.getElementById('sendCredentials').checked;
-
-            // Génération automatique
-            const securite_sociale = generateSecurityNumber();
-            const password = generatePassword();
-
-            // Validation
-            if (!userType || !nom || !prenom || !email || !telephone) {
-                alert('Tous les champs sont obligatoires.');
-                return;
+    // Filter users table
+    function filterUsers(type) {
+        const rows = document.querySelectorAll('#page-users tbody tr');
+        rows.forEach(row => {
+            if (type === 'all' || row.getAttribute('data-type') === type) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
             }
+        });
 
-            // Envoi de la requête API
-            fetch('/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password,
-                    securite_sociale: securite_sociale,
-                    role: userType,
-                    telephone: telephone
-                })
+        // Update active tab (event implicite navigateur)
+        event.target.parentElement.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    // Logout function
+    function logout() {
+        if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+            alert('Déconnexion réussie. Redirection vers la page de connexion...');
+            // Redirect to login page
+        }
+    }
+
+    // Modal functions
+    function openCreateUserModal() {
+        document.getElementById('createUserModal').classList.add('active');
+    }
+
+    function closeCreateUserModal() {
+        document.getElementById('createUserModal').classList.remove('active');
+        document.getElementById('createUserForm').reset();
+    }
+
+    // Generate random password
+    function generatePassword() {
+        return Math.random().toString(36).slice(-8);
+    }
+
+    // Generate random security number
+    function generateSecurityNumber() {
+        return Array.from({ length: 15 }, () => Math.floor(Math.random() * 10)).join('');
+    }
+
+    // Create user function
+    function createUser(event) {
+        event.preventDefault();
+
+        const userType = document.getElementById('userType').value;
+        const nom = document.getElementById('userNom').value;
+        const prenom = document.getElementById('userPrenom').value;
+        const email = document.getElementById('userEmail').value;
+        const telephone = document.getElementById('userTelephone').value;
+        const sendCredentials = document.getElementById('sendCredentials').checked;
+
+        // Génération automatique
+        const securite_sociale = generateSecurityNumber();
+        const password = generatePassword();
+
+        // Validation
+        if (!userType || !nom || !prenom || !email || !telephone) {
+            alert('Tous les champs sont obligatoires.');
+            return;
+        }
+
+        // Envoi de la requête API
+        fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+                securite_sociale: securite_sociale,
+                role: userType,
+                telephone: telephone
             })
+        })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -843,7 +799,6 @@
                         `N° Sécurité Sociale: ${securite_sociale}\n\n` +
                         (sendCredentials ? '✉️ Les identifiants ont été envoyés par email.' : '📋 Les identifiants doivent être communiqués manuellement.'));
                     closeCreateUserModal();
-                    // Rafraîchir la page pour voir le nouvel utilisateur
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     alert('❌ Erreur: ' + data.error);
@@ -853,50 +808,159 @@
                 console.error('Erreur:', error);
                 alert('❌ Une erreur est survenue lors de la création du compte.');
             });
+    }
+
+    // View user function
+    function viewUser(name) {
+        alert(`Affichage des détails de: ${name}\n\n- Informations personnelles\n- Historique d'activité\n- Documents\n- Logs de connexion`);
+    }
+
+    // Edit user function
+    function editUser(name) {
+        alert(`Modification du compte: ${name}\n\nVous pouvez modifier:\n- Informations personnelles\n- Statut (actif/inactif)\n- Rôle (patient/médecin)\n- Permissions`);
+    }
+
+    // Delete user function
+    function deleteUser(button) {
+        const row = button.closest('tr');
+        const name = row.querySelector('.user-details h4').textContent;
+
+        if (confirm(`Êtes-vous sûr de vouloir supprimer le compte de ${name} ?\n\nCette action est irréversible.`)) {
+            alert(`Compte de ${name} supprimé avec succès.`);
+            row.remove();
         }
+    }
 
-        // View user function
-        function viewUser(name) {
-            alert(`Affichage des détails de: ${name}\n\n- Informations personnelles\n- Historique d'activité\n- Documents\n- Logs de connexion`);
-        }
+    // 🔍 Affichage des détails d'une demande de contact
+    function viewContactDetails(data) {
+        alert(
+            "📄 Formulaire de contact :\n\n" +
+            "👤 Nom : " + data.prenom + " " + data.nom + "\n" +
+            "🧬 Type : " + (data.type === 'medecin' ? 'Médecin' : 'Patient') + "\n" +
+            "✉️ Email : " + data.email + "\n" +
+            "📞 Téléphone : " + (data.telephone || "Non renseigné") + "\n" +
+            "📌 Sujet : " + data.sujet + "\n\n" +
+            "📝 Message :\n" + data.message
+        );
+    }
 
-        // Edit user function
-        function editUser(name) {
-            alert(`Modification du compte: ${name}\n\nVous pouvez modifier:\n- Informations personnelles\n- Statut (actif/inactif)\n- Rôle (patient/médecin)\n- Permissions`);
-        }
+    // ✅ Valider une demande
+    async function validatePendingUser(rowElement, id) {
+        if (!confirm("Valider cette demande ?")) return;
 
-        // Delete user function
-        function deleteUser(button) {
-            const row = button.closest('tr');
-            const name = row.querySelector('.user-details h4').textContent;
+        try {
+            const res = await fetch('/api/admin/validate-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const data = await res.json();
 
-            if (confirm(`Êtes-vous sûr de vouloir supprimer le compte de ${name} ?\n\nCette action est irréversible.`)) {
-                alert(`Compte de ${name} supprimé avec succès.`);
-                row.remove();
+            if (data.success) {
+                alert("✓ Demande validée. Email envoyé.");
+                rowElement.remove();
+            } else {
+                alert("Erreur lors de la validation.");
             }
+        } catch (err) {
+            console.error(err);
+            alert("Erreur réseau pendant la validation.");
         }
+    }
 
-        // Validate pending user function
-        function validatePendingUser(button, name, email) {
-            if (confirm(`Valider le compte de ${name} ?\n\nLe compte sera activé et les identifiants seront envoyés par email à ${email}`)) {
-                alert(`✓ Compte validé avec succès !\n\n` +
-                    `Utilisateur: ${name}\n` +
-                    `Email: ${email}\n\n` +
-                    `✉️ Un email contenant les identifiants de connexion a été automatiquement envoyé.`);
+    // ❌ Refuser une demande
+    async function rejectUser(rowElement, id) {
+        if (!confirm("Refuser cette demande ?")) return;
 
-                // Remove row from pending table
-                button.closest('tr').remove();
+        try {
+            const res = await fetch('/api/admin/refuse-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                alert("✗ Demande refusée. Email envoyé.");
+                rowElement.remove();
+            } else {
+                alert("Erreur lors du refus.");
             }
+        } catch (err) {
+            console.error(err);
+            alert("Erreur réseau pendant le refus.");
         }
+    }
 
-        // Reject user function
-        function rejectUser(button, name) {
-            if (confirm(`Refuser la demande de ${name} ?\n\nL'utilisateur sera notifié par email.`)) {
-                alert(`Demande de ${name} refusée.\n\nUn email de notification a été envoyé.`);
-                button.closest('tr').remove();
+    // 🔄 Charger toutes les demandes en attente et remplir le tableau
+    async function loadPendingRequests() {
+        try {
+            const res = await fetch('/api/admin/pending-requests');
+            const requests = await res.json();
+
+            const tbody = document.getElementById('pending-requests-body');
+            tbody.innerHTML = '';
+
+            if (!requests.length) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 4;
+                td.textContent = "Aucune demande en attente.";
+                td.style.textAlign = 'center';
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                return;
             }
+
+            requests.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.dataset.id = r.id;
+
+                tr.innerHTML = `
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-small">
+                                ${(r.prenom[0] || '?')}${(r.nom[0] || '?')}
+                            </div>
+                            <div class="user-details">
+                                <h4>${r.type === 'medecin' ? 'Dr. ' + r.nom : r.prenom + ' ' + r.nom}</h4>
+                                <p>${r.email}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${r.type === 'medecin' ? 'Médecin' : 'Patient'}</td>
+                    <td>${new Date(r.createdAt).toLocaleDateString('fr-FR')}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-view">👁️</button>
+                            <button class="btn-action btn-validate">✓ Valider</button>
+                            <button class="btn-action btn-delete">✗ Refuser</button>
+                        </div>
+                    </td>
+                `;
+
+                tr.querySelector('.btn-view').addEventListener('click', () => {
+                    viewContactDetails(r);
+                });
+
+                tr.querySelector('.btn-validate').addEventListener('click', () => {
+                    validatePendingUser(tr, r.id);
+                });
+
+                tr.querySelector('.btn-delete').addEventListener('click', () => {
+                    rejectUser(tr, r.id);
+                });
+
+                tbody.appendChild(tr);
+            });
+
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors du chargement des demandes en attente.");
         }
-    </script>
+    }
+</script>
+
 </body>
 
 </html>
