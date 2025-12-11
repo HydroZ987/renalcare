@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../../style/admin.css">
     <script src="/js/sidebar.js" defer></script>
     <script src="/js/admin-users.js" defer></script>
+    <script src="/js/admin-overview.js" defer></script>
 </head>
 
 <body>
@@ -46,28 +47,28 @@
                     <div class="stats-grid">
                         <div class="stat-card purple">
                             <div class="stat-info">
-                                <h3>145</h3>
+                                <h3 id="stat-total">...</h3>
                                 <p>Total comptes</p>
                             </div>
                             <div class="stat-icon">👥</div>
                         </div>
                         <div class="stat-card blue">
                             <div class="stat-info">
-                                <h3>100</h3>
+                                <h3 id="stat-patients">...</h3>
                                 <p>Patients actifs</p>
                             </div>
                             <div class="stat-icon">🫘</div>
                         </div>
                         <div class="stat-card green">
                             <div class="stat-info">
-                                <h3>35</h3>
+                                <h3 id="stat-medecins">...</h3>
                                 <p>Médecins actifs</p>
                             </div>
                             <div class="stat-icon">⚕️</div>
                         </div>
                         <div class="stat-card orange">
                             <div class="stat-info">
-                                <h3>8</h3>
+                                <h3 id="stat-pending">...</h3>
                                 <p>En attente</p>
                             </div>
                             <div class="stat-icon">⏳</div>
@@ -119,9 +120,9 @@
                                 <div class="card-header">
                                     <h2>Accès Rapides</h2>
                                 </div>
-                                <button class="btn-primary" style="width: 100%; margin-bottom: 10px;"
+                                <button id="btn-quick-pending" class="btn-primary" style="width: 100%; margin-bottom: 10px;"
                                     onclick="navigateTo('pending')">
-                                    ⏳ Valider les comptes (8)
+                                    ⏳ Valider les comptes (...)
                                 </button>
                                 <button class="btn-primary" style="width: 100%; margin-bottom: 10px;"
                                     onclick="navigateTo('support')">

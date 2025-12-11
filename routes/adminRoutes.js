@@ -252,4 +252,49 @@ router.delete('/users/:id', async (req, res) => {
   }
 });
 
+// ==========================================
+// STATISTIQUES
+// ==========================================
+
+/**
+ * GET /api/admin/stats
+ * Récupère les statistiques globales
+ */
+router.get('/stats', async (req, res) => {
+  try {
+    // Compter les utilisateurs par rôle (hors admin)
+    const usersCount = await sql`
+      SELECT role, COUNT(*) as count 
+      FROM utilisateur 
+      WHERE role != 'Admin' 
+      GROUP BY role
+    `;
+
+    let totalPatients = 0;
+    let totalMedecins = 0;
+
+    usersCount.forEach(row => {
+      if (row.role === 'Patient') totalPatients = parseInt(row.count);
+      if (row.role === 'Medecin') totalMedecins = parseInt(row.count);
+    });
+
+    // Récupérer le nombre de demandes en attente
+    const pendingRequests = pendingRequestsStore.getAll();
+    const pendingCount = pendingRequests.length;
+
+    res.json({
+      success: true,
+      stats: {
+        total: totalPatients + totalMedecins,
+        patients: totalPatients,
+        medecins: totalMedecins,
+        pending: pendingCount
+      }
+    });
+  } catch (err) {
+    console.error('Erreur GET /stats:', err);
+    res.status(500).json({ success: false, error: 'Erreur serveur' });
+  }
+});
+
 module.exports = router;
