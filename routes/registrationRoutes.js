@@ -93,6 +93,9 @@ router.post('/complete', async (req, res) => {
     securite_sociale, date_greffe, maladie, groupe_sanguin, poids, taille, allergies, genre, date_naissance
   } = req.body;
 
+  // Nettoyage du numéro de sécurité sociale (enlever les espaces)
+  const cleanSecu = securite_sociale ? securite_sociale.replace(/\s/g, '') : null;
+
   if (!email || !password) {
     return res.status(400).json({ success: false, error: 'Email et mot de passe requis.' });
   }
@@ -134,19 +137,19 @@ router.post('/complete', async (req, res) => {
               adresse_postale = ${adresse_hopital || adresse || user.adresse_postale},
               date_naissance = ${date_naissance || user.date_naissance},
               sexe = ${sexe},
-              role = 'Medecin'
+              role = 'Medecin',
+              grade = ${grade || null},
+              specialite = ${specialite || null},
+              numero_licence = ${numero_licence || null}
           WHERE email = ${email}
           RETURNING id, email, role
         `;
-        
-        // TODO: Si une table 'medecins' existe, insérer specialite, grade, numero_licence
-        
     } else {
         // Patient
         updatedUsers = await sql`
           UPDATE utilisateur 
           SET mdp = ${hashedPassword},
-              securite_sociale = ${securite_sociale || user.securite_sociale},
+              securite_sociale = ${cleanSecu || user.securite_sociale},
               nom = ${nom || user.nom},
               prenom = ${prenom || user.prenom},
               telephone = ${telephone || user.telephone},
@@ -157,8 +160,56 @@ router.post('/complete', async (req, res) => {
           WHERE email = ${email}
           RETURNING id, email, role
         `;
-        
-        // TODO: Si une table 'patients' ou 'dossier_medical' existe, insérer date_greffe, maladie, etc.
+
+        if (updatedUsers && updatedUsers.length > 0) {
+            const userId = updatedUsers[0].id;
+            
+            // Gestion Dossier Médical
+            let dossier = await sql`SELECT id FROM dossier_medical WHERE id_utilisateur = ${userId}`;
+            
+            if (dossier.length === 0) {
+                // Création du dossier médical si inexistant
+                dossier = await sql`
+                    INSERT INTO dossier_medical (id_utilisateur, groupe_sanguin, date_creation) 
+                    VALUES (${userId}, ${groupe_sanguin || null}, NOW()) 
+                    RETURNING id
+                `;
+            } else if (groupe_sanguin) {
+                // Mise à jour du groupe sanguin si fourni
+                await sql`UPDATE dossier_medical SET groupe_sanguin = ${groupe_sanguin} WHERE id = ${dossier[0].id}`;
+            }
+            
+            const dossierId = dossier[0].id;
+
+            // Insertion dans suivi_patient
+            // Convertir poids et taille en nombres
+            const poidsNum = poids ? parseFloat(poids) : null;
+            const tailleNum = taille ? parseInt(taille) : null;
+            
+            await sql`
+                INSERT INTO suivi_patient (
+                    date, 
+                    poids, 
+                    taille, 
+                    date_greffe, 
+                    allergies, 
+                    maladie_renale, 
+                    id_dossier_medical,
+                    suivi_traitement,
+                    prescription
+                ) VALUES (
+                    NOW(),
+                    ${poidsNum},
+                    ${tailleNum},
+                    ${date_greffe || null},
+                    ${allergies || null},
+                    ${maladie || null},
+                    ${dossierId},
+                    false,
+                    NULL
+                )
+            `;
+        }
     }
 
     if (!updatedUsers || updatedUsers.length === 0) {

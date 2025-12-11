@@ -549,7 +549,7 @@
 
                         <div class="btn-group">
                             <button type="button" class="btn btn-secondary" onclick="prevStep()">Retour</button>
-                            <button type="button" class="btn btn-primary" onclick="completeInscription()">Créer mon compte</button>
+                            <button type="button" class="btn btn-primary" id="btn-complete-inscription">Créer mon compte</button>
                         </div>
                     </form>    
                 </div>
@@ -762,22 +762,39 @@
         }
 
         // === ÉTAPE 4: Profil médical ===
-        function completeInscription() {
-            const formData = new FormData(document.getElementById('inscriptionForm'));
-            const data = Object.fromEntries(formData);
+        const btnComplete = document.getElementById('btn-complete-inscription');
+        if (btnComplete) {
+            btnComplete.addEventListener('click', completeInscription);
+        }
 
-            const maladie = document.querySelector('input[name="maladie"]')?.value || null;
-            const groupe_sanguin = document.querySelector('select[name="groupe_sanguin"]')?.value || null;
-            const poids = document.querySelector('input[name="poids"]')?.value || null;
-            const allergie = document.querySelector('textarea[name="allergie"]')?.value || null;
-            const adresse = document.querySelector('textarea[name="adresse"]')?.value || null;
+        function completeInscription() {
+            const maladie = document.querySelector('input[name="maladie"]')?.value?.trim();
+            const groupe_sanguin = document.querySelector('select[name="groupe_sanguin"]')?.value;
+            const poids = document.querySelector('input[name="poids"]')?.value;
+            const taille = document.querySelector('input[name="taille"]')?.value;
+            const allergies = document.querySelector('textarea[name="allergies"]')?.value?.trim();
+            const adresse = document.querySelector('textarea[name="adresse"]')?.value?.trim();
+            const date_greffe = document.querySelector('input[name="date_greffe"]')?.value;
+            const date_naissance = document.querySelector('input[name="date_naissance"]')?.value;
+            const genre = document.querySelector('input[name="genre"]:checked')?.value;
+            const securite_sociale = document.querySelector('input[name="num_secu"]')?.value?.trim();
+
+            if (!maladie || !groupe_sanguin || !poids || !taille || !adresse || !date_naissance || !genre || !date_greffe || !securite_sociale) {
+                alert("Merci de remplir tous les champs obligatoires.");
+                return;
+            }
 
             Object.assign(registrationData, {
                 maladie,
                 groupe_sanguin,
                 poids,
-                allergie,
+                taille,
+                allergies,
                 adresse,
+                date_greffe,
+                date_naissance,
+                genre,
+                securite_sociale
             });
 
             fetch('/api/register/complete', {
