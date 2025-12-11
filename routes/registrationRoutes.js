@@ -164,51 +164,56 @@ router.post('/complete', async (req, res) => {
         if (updatedUsers && updatedUsers.length > 0) {
             const userId = updatedUsers[0].id;
             
-            // Gestion Dossier Médical
-            let dossier = await sql`SELECT id FROM dossier_medical WHERE id_utilisateur = ${userId}`;
-            
-            if (dossier.length === 0) {
-                // Création du dossier médical si inexistant
-                dossier = await sql`
-                    INSERT INTO dossier_medical (id_utilisateur, groupe_sanguin, date_creation) 
-                    VALUES (${userId}, ${groupe_sanguin || null}, NOW()) 
-                    RETURNING id
-                `;
-            } else if (groupe_sanguin) {
-                // Mise à jour du groupe sanguin si fourni
-                await sql`UPDATE dossier_medical SET groupe_sanguin = ${groupe_sanguin} WHERE id = ${dossier[0].id}`;
-            }
-            
-            const dossierId = dossier[0].id;
+            try {
+                // Gestion Dossier Médical
+                let dossier = await sql`SELECT id FROM dossier_medical WHERE id_utilisateur = ${userId}`;
+                
+                if (dossier.length === 0) {
+                    // Création du dossier médical si inexistant
+                    dossier = await sql`
+                        INSERT INTO dossier_medical (id_utilisateur, groupe_sanguin, date_creation) 
+                        VALUES (${userId}, ${groupe_sanguin || null}, NOW()) 
+                        RETURNING id
+                    `;
+                } else if (groupe_sanguin) {
+                    // Mise à jour du groupe sanguin si fourni
+                    await sql`UPDATE dossier_medical SET groupe_sanguin = ${groupe_sanguin} WHERE id = ${dossier[0].id}`;
+                }
+                
+                const dossierId = dossier[0].id;
 
-            // Insertion dans suivi_patient
-            // Convertir poids et taille en nombres
-            const poidsNum = poids ? parseFloat(poids) : null;
-            const tailleNum = taille ? parseInt(taille) : null;
-            
-            await sql`
-                INSERT INTO suivi_patient (
-                    date, 
-                    poids, 
-                    taille, 
-                    date_greffe, 
-                    allergies, 
-                    maladie_renale, 
-                    id_dossier_medical,
-                    suivi_traitement,
-                    prescription
-                ) VALUES (
-                    NOW(),
-                    ${poidsNum},
-                    ${tailleNum},
-                    ${date_greffe || null},
-                    ${allergies || null},
-                    ${maladie || null},
-                    ${dossierId},
-                    false,
-                    NULL
-                )
-            `;
+                // Insertion dans suivi_patient
+                // Convertir poids et taille en nombres
+                const poidsNum = poids ? parseFloat(poids) : null;
+                const tailleNum = taille ? parseInt(taille) : null;
+                const dateGreffeVal = date_greffe === "" ? null : date_greffe;
+                
+                await sql`
+                    INSERT INTO suivi_patient (
+                        date, 
+                        poids, 
+                        taille, 
+                        date_greffe, 
+                        allergies, 
+                        maladie_renale, 
+                        id_dossier_medical,
+                        suivi_traitement,
+                        prescription
+                    ) VALUES (
+                        NOW(),
+                        ${poidsNum},
+                        ${tailleNum},
+                        ${dateGreffeVal || null},
+                        ${allergies || null},
+                        ${maladie || null},
+                        ${dossierId},
+                        false,
+                        NULL
+                    )
+                `;
+            } catch (secondaryErr) {
+                console.error('[REGISTER] Erreur secondaire (dossier/suivi) ignorée pour ne pas bloquer l\'inscription:', secondaryErr);
+            }
         }
     }
 
@@ -227,7 +232,7 @@ router.post('/complete', async (req, res) => {
 
   } catch (err) {
     console.error('[REGISTER] Erreur complete :', err);
-    res.status(500).json({ success: false, error: "Erreur lors de la finalisation de l'inscription." });
+    res.status(500).json({ success: false, error: "Erreur lors de la finalisation de l'inscription: " + err.message });
   }
 });
 
