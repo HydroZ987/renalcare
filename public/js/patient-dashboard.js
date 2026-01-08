@@ -8,10 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Vérifier que l'utilisateur est connecté
   if (!userName || userRole !== 'patient') {
-    // Rediriger vers la page de connexion si pas de session
-    window.location.href = '/login';
+    window.location.replace('/');
     return;
   }
+
+  // Empêcher le retour arrière sur le dashboard après déconnexion
+  preventBackNavigation('patient');
 
   // Extraire prénom et nom
   const nameParts = userName.split(' ');
@@ -67,7 +69,7 @@ function setupLogoutButton() {
       localStorage.removeItem('user_role');
       localStorage.removeItem('user_name');
       localStorage.removeItem('user_profile');
-      window.location.href = '/login';
+      window.location.replace('/');
       return;
     }
     
@@ -79,7 +81,24 @@ function setupLogoutButton() {
       localStorage.removeItem('user_role');
       localStorage.removeItem('user_name');
       localStorage.removeItem('user_profile');
-      window.location.href = '/login';
+      window.location.replace('/');
+    }
+  });
+}
+
+// Empêche de revenir au dashboard via le bouton retour si non authentifié
+function preventBackNavigation(expectedRole) {
+  history.replaceState(null, '', location.href);
+  const guard = () => {
+    const role = localStorage.getItem('user_role');
+    if (role !== expectedRole) {
+      window.location.replace('/');
+    }
+  };
+  window.addEventListener('popstate', guard);
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      guard();
     }
   });
 }

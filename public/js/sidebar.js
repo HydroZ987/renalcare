@@ -85,9 +85,15 @@ window.logout = function() {
     localStorage.removeItem('token');
     localStorage.removeItem('userType');
     localStorage.removeItem('userId');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_role');
+    localStorage.removeItem('user_name');
+    localStorage.removeItem('user_profile');
     sessionStorage.clear();
     
-    // Redirection vers la page d'accueil
-    window.location.href = '/';
+    // Redirection vers la page d'accueil et empêcher retour
+    window.location.replace('/');
   }
 };
