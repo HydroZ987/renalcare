@@ -168,6 +168,35 @@ router.get('/:id/traitements', authenticatePatient, async (req, res) => {
   }
 });
 
+// Derniers résultats (réponses) du patient
+router.get('/:id/resultats', authenticatePatient, async (req, res) => {
+  try {
+    const dossier = await sql`
+      SELECT id
+      FROM dossier_medical
+      WHERE id_utilisateur = ${req.patientId}
+      LIMIT 1
+    `;
+
+    if (!dossier.length) {
+      return res.status(404).json({ success: false, error: 'Dossier introuvable' });
+    }
+
+    const responses = await sql`
+      SELECT id, date, creatinine, tension_systolique, tension_diastolique, temperature, poids
+      FROM reponse
+      WHERE id_dossier_medical = ${dossier[0].id}
+      ORDER BY date DESC, id DESC
+      LIMIT 10
+    `;
+
+    return res.json({ success: true, resultats: responses || [] });
+  } catch (err) {
+    console.error('Erreur récupération résultats patient:', err);
+    res.status(500).json({ success: false, error: 'Impossible de récupérer les résultats.' });
+  }
+});
+
 router.post('/:id/questionnaires', async (req, res) => {
   const patientId = req.params.id;
   const {
