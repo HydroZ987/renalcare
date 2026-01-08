@@ -787,6 +787,26 @@
             background: #6366f1;
         }
 
+        .selected-alert-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff7ed;
+            color: #9a3412;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid #fed7aa;
+        }
+
+        .selected-alert-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f97316;
+        }
+
         .data-tile.muted {
             background: #f3f4f6;
             color: #7a7a7a;
@@ -1031,7 +1051,14 @@
 
                             <div class="card">
                                 <div class="card-header">
-                                    <h2>Alertes & Notifications</h2>
+                                    <div>
+                                        <h2>Alertes & Notifications</h2>
+                                        <p class="card-subtitle">Questionnaires critiques et messages liés</p>
+                                    </div>
+                                    <div id="alertPatientBadge" class="selected-alert-badge" style="display:none;">
+                                        <span class="dot"></span>
+                                        <span id="alertPatientName">Patient</span>
+                                    </div>
                                 </div>
 
                                 <div id="alertsList">
@@ -2658,6 +2685,11 @@
 
             if (badge) badge.style.display = 'inline-flex';
             if (badgeName) badgeName.textContent = patientLabel || 'Patient';
+
+            const alertBadge = document.getElementById('alertPatientBadge');
+            const alertBadgeName = document.getElementById('alertPatientName');
+            if (alertBadge) alertBadge.style.display = 'inline-flex';
+            if (alertBadgeName) alertBadgeName.textContent = patientLabel || 'Patient';
 
             const responses = await fetchPatientResponses(patientId);
             currentPatientResponses = responses || [];
