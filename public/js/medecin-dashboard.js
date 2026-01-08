@@ -56,7 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Alimenter le sélecteur de patients pour le suivi
   populatePatientSelect();
+
+  // Activer les barres de recherche
+  setupMedecinSearchBars();
 });
+
+let assignedPatients = [];
+let patientsSearchTerm = '';
+let managePatientsSearchTerm = '';
 
 // Remplit le select du suivi avec les patients affectés
 async function populatePatientSelect() {
@@ -203,6 +210,25 @@ function dedupePatients(patients = []) {
   });
 }
 
+function setupMedecinSearchBars() {
+  const listSearchInput = document.querySelector('#page-patients .search-bar .search-input');
+  const manageSearchInput = document.querySelector('#page-gestion .search-bar .search-input');
+
+  if (listSearchInput) {
+    listSearchInput.addEventListener('input', (e) => {
+      patientsSearchTerm = e.target.value.toLowerCase().trim();
+      renderPatientLists();
+    });
+  }
+
+  if (manageSearchInput) {
+    manageSearchInput.addEventListener('input', (e) => {
+      managePatientsSearchTerm = e.target.value.toLowerCase().trim();
+      renderPatientLists();
+    });
+  }
+}
+
 // Fonction pour affecter un patient au médecin connecté
 async function assignPatientToMe(patientId, prenom, nom) {
   if (!confirm(`Voulez-vous vraiment affecter ${prenom} ${nom} à votre liste de patients ?`)) {
@@ -244,7 +270,7 @@ function searchUnassignedPatients() {
   const patientItems = document.querySelectorAll('#unassignedPatientsList .patient-item');
 
   patientItems.forEach(item => {
-    const text = item.textContent.toLowerCase();
+    const text = item.textContent.toLowerCase().replace(/@[^\s]+/g, '');
     item.style.display = text.includes(searchTerm) ? 'flex' : 'none';
   });
 }
@@ -306,9 +332,9 @@ async function loadAssignedPatients() {
     }
 
     const data = await response.json();
-    const patients = dedupePatients(data.patients || []);
+    assignedPatients = dedupePatients(data.patients || []);
     
-    if (!data.success || patients.length === 0) {
+    if (!data.success || assignedPatients.length === 0) {
       if (listContainer) {
         listContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Aucun patient affecté. Consultez la section "Patients non affectés" pour en ajouter.</p>';
       }
@@ -320,45 +346,8 @@ async function loadAssignedPatients() {
       return;
     }
 
-    // Afficher les patients
-    if (listContainer) {
-      listContainer.innerHTML = patients.map(patient => {
-        const initials = getInitials(patient.prenom, patient.nom);
-        const contact = [patient.email, patient.telephone].filter(Boolean).join(' • ');
-        const address = patient.adresse_postale ? ` • ${patient.adresse_postale}` : '';
-        
-        return `
-          <div class="patient-item" data-priority="stable" onclick="viewPatient('${patient.prenom} ${patient.nom}')">
-            <div class="patient-avatar">${initials}</div>
-            <div class="patient-info">
-              <h4>${patient.prenom} ${patient.nom}</h4>
-              <p>${contact || 'Contact non renseigné'}${address}</p>
-            </div>
-            <span class="patient-status status-stable">Affecté</span>
-          </div>
-        `;
-      }).join('');
-    }
-
-    if (manageList) {
-      manageList.innerHTML = patients.map(patient => {
-        const initials = getInitials(patient.prenom, patient.nom);
-        const contact = [patient.email, patient.telephone].filter(Boolean).join(' • ');
-        
-        return `
-          <div class="patient-item">
-            <div class="patient-avatar">${initials}</div>
-            <div class="patient-info">
-              <h4>${patient.prenom} ${patient.nom}</h4>
-              <p>${contact || 'Contact non renseigné'}</p>
-            </div>
-            <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="editPatient('${patient.prenom} ${patient.nom}')">✏️ Modifier</button>
-          </div>
-        `;
-      }).join('');
-    }
-
-    updatePatientsCount(patients.length);
+    renderPatientLists();
+    updatePatientsCount(assignedPatients.length);
     populatePatientSelect();
 
   } catch (error) {
@@ -370,6 +359,78 @@ async function loadAssignedPatients() {
       manageList.innerHTML = '<p style="text-align: center; color: #e74c3c; padding: 20px;">❌ Erreur lors du chargement des patients</p>';
     }
   }
+}
+
+function renderPatientLists() {
+  renderAllPatientsList();
+  renderManagePatientsList();
+}
+
+function filterPatientsByTerm(list, term) {
+  if (!term) return list;
+  const lower = term.toLowerCase();
+  return list.filter((p) => {
+    const emailLocal = (p.email || '').split('@')[0];
+    const haystack = `${p.prenom || ''} ${p.nom || ''} ${emailLocal} ${p.telephone || ''} ${p.adresse_postale || ''}`.toLowerCase();
+    return haystack.includes(lower);
+  });
+}
+
+function renderAllPatientsList() {
+  const listContainer = document.getElementById('allPatientsList');
+  if (!listContainer) return;
+
+  const filtered = filterPatientsByTerm(assignedPatients, patientsSearchTerm);
+
+  if (filtered.length === 0) {
+    listContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Aucun patient correspondant.</p>';
+    return;
+  }
+
+  listContainer.innerHTML = filtered.map(patient => {
+    const initials = getInitials(patient.prenom, patient.nom);
+    const contact = [patient.email, patient.telephone].filter(Boolean).join(' • ');
+    const address = patient.adresse_postale ? ` • ${patient.adresse_postale}` : '';
+    
+    return `
+      <div class="patient-item" data-priority="stable" onclick="viewPatient('${patient.prenom} ${patient.nom}')">
+        <div class="patient-avatar">${initials}</div>
+        <div class="patient-info">
+          <h4>${patient.prenom} ${patient.nom}</h4>
+          <p>${contact || 'Contact non renseigné'}${address}</p>
+        </div>
+        <span class="patient-status status-stable">Affecté</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderManagePatientsList() {
+  const manageList = document.getElementById('managePatientsList');
+  if (!manageList) return;
+
+  const filtered = filterPatientsByTerm(assignedPatients, managePatientsSearchTerm);
+
+  if (filtered.length === 0) {
+    manageList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucun patient correspondant.</p>';
+    return;
+  }
+
+  manageList.innerHTML = filtered.map(patient => {
+    const initials = getInitials(patient.prenom, patient.nom);
+    const contact = [patient.email, patient.telephone].filter(Boolean).join(' • ');
+    
+    return `
+      <div class="patient-item">
+        <div class="patient-avatar">${initials}</div>
+        <div class="patient-info">
+          <h4>${patient.prenom} ${patient.nom}</h4>
+          <p>${contact || 'Contact non renseigné'}</p>
+        </div>
+        <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="editPatient('${patient.prenom} ${patient.nom}')">✏️ Modifier</button>
+      </div>
+    `;
+  }).join('');
 }
 
 // Fonction pour mettre à jour le compteur de patients

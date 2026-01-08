@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Charger les utilisateurs si on est sur la page users
     if (document.getElementById('page-users')) {
         loadUsers();
+        setupUserSearch();
     }
 
     // Écouter les changements d'onglets pour recharger si nécessaire
@@ -44,6 +45,20 @@ function preventBackNavigation(expectedRole) {
 }
 
 let allUsers = []; // Stockage local pour le filtrage
+let currentFilterType = 'all';
+let currentSearchTerm = '';
+
+function setupUserSearch() {
+    const searchInput = document.querySelector('#page-users .search-bar .search-input');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            currentSearchTerm = e.target.value.toLowerCase().trim();
+            applyUserFilters();
+        });
+    }
+
+}
 
 async function loadUsers() {
     const tbody = document.querySelector('#page-users tbody');
@@ -55,7 +70,7 @@ async function loadUsers() {
         const res = await fetch('/api/admin/users');
         const users = await res.json();
         allUsers = users; // Sauvegarder pour le filtrage
-        renderUsers(users);
+        applyUserFilters();
         updateBadges(users);
     } catch (err) {
         console.error('Erreur chargement utilisateurs:', err);
@@ -124,13 +139,27 @@ window.filterUsers = function(type) {
     const activeTab = document.querySelector(`.tab[onclick="filterUsers('${type}')"]`);
     if (activeTab) activeTab.classList.add('active');
 
-    if (type === 'all') {
-        renderUsers(allUsers);
-    } else {
-        const filtered = allUsers.filter(u => u.role && u.role.toLowerCase() === type.toLowerCase());
-        renderUsers(filtered);
-    }
+    currentFilterType = type;
+    applyUserFilters();
 };
+
+function applyUserFilters() {
+    let users = [...allUsers];
+
+    if (currentFilterType !== 'all') {
+        users = users.filter(u => u.role && u.role.toLowerCase() === currentFilterType.toLowerCase());
+    }
+
+    if (currentSearchTerm) {
+        users = users.filter((u) => {
+            const emailLocal = (u.email || '').split('@')[0];
+            const haystack = `${u.prenom || ''} ${u.nom || ''} ${emailLocal}`.toLowerCase();
+            return haystack.includes(currentSearchTerm);
+        });
+    }
+
+    renderUsers(users);
+}
 
 // Suppression
 window.deleteUserById = async function(id, name) {
