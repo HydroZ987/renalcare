@@ -871,11 +871,17 @@ body {
                             <h2>Suivi des Données Patients</h2>
                         </div>
 
-                        <div class="search-bar">
-                            <select id="patientSelect" class="search-input" onchange="loadPatientData()">
-                                <option value="">Sélectionner un patient...</option>
-                            </select>
-                            <button class="btn-primary" onclick="loadPatientData()">Charger les données</button>
+                        <div id="suiviNotice" style="display:none; margin: 12px 0; padding: 10px 12px; background: #e8f4ff; color: #1f4f7a; border-left: 4px solid #1f6feb; border-radius: 8px; font-size: 14px;">
+                            Données chargées.
+                        </div>
+
+                        <div class="search-bar" style="gap: 12px; flex-wrap: wrap;">
+                            <input type="text" id="patientSelectSearchTop" class="search-input" placeholder="Rechercher un patient (nom, téléphone, email)..." style="flex:1 1 260px;">
+                        </div>
+
+                        <div class="search-bar" style="gap: 12px; flex-wrap: wrap;">
+                            <div id="patientSelectList" class="search-results" style="width:100%; max-height: 260px; overflow-y: auto; display: grid; gap: 8px;"></div>
+                            <select id="patientSelectHidden" style="display:none;"></select>
                         </div>
 
                         <div class="tabs">
@@ -1777,10 +1783,12 @@ body {
 
         // Load Patient Data
         function loadPatientData() {
-            const patient = document.getElementById('patientSelect').value;
+            const selectEl = document.getElementById('patientSelectHidden');
+            const patientId = selectEl.value;
+            const patientLabel = selectEl.options[selectEl.selectedIndex]?.textContent || '';
+            const notice = document.getElementById('suiviNotice');
 
-            if (!patient) {
-                alert('Veuillez sélectionner un patient');
+            if (!patientId) {
                 return;
             }
 
@@ -1790,17 +1798,35 @@ body {
                     <span class="alert-icon">📋</span>
                     <div class="alert-content">
                         <h4>14/10/2025 - Légère fatigue</h4>
-                        <p>Intensité: 3/10 • Patient: ${patient}</p>
+                        <p>Intensité: 3/10 • Patient: ${patientLabel}</p>
                     </div>
                 </div>
                 <div class="alert alert-warning">
                     <span class="alert-icon">⚠️</span>
                     <div class="alert-content">
                         <h4>10/10/2025 - Douleur au greffon</h4>
-                        <p>Intensité: 5/10 • Patient: ${patient}</p>
+                        <p>Intensité: 5/10 • Patient: ${patientLabel}</p>
                     </div>
                 </div>
             `;
+
+            if (notice) {
+                notice.innerHTML = `
+                    <strong>✅ Données chargées</strong><br>
+                    <span style="font-weight:500;">${patientLabel}</span>
+                `;
+                notice.style.display = 'block';
+                notice.style.opacity = '1';
+                notice.style.transform = 'translateY(0)';
+                setTimeout(() => {
+                    notice.style.opacity = '0';
+                    notice.style.transform = 'translateY(-6px)';
+                }, 2000);
+                setTimeout(() => {
+                    notice.style.display = 'none';
+                    notice.style.transform = 'translateY(0)';
+                }, 2600);
+            }
 
             // Charger traitements
             document.getElementById('traitementsData').innerHTML = `
@@ -1846,7 +1872,7 @@ body {
             document.getElementById('questionnairesData').innerHTML = `
                 <div class="questionnaire-item">
                     <div class="questionnaire-header">
-                        <span class="questionnaire-title">Questionnaire Post-Greffe - ${patient}</span>
+                        <span class="questionnaire-title">Questionnaire Post-Greffe - ${patientLabel}</span>
                         <span class="questionnaire-date">14/10/2025</span>
                     </div>
                     <div class="questionnaire-data">
@@ -1869,7 +1895,7 @@ body {
                 </div>
                 <div class="questionnaire-item">
                     <div class="questionnaire-header">
-                        <span class="questionnaire-title">Questionnaire Post-Greffe - ${patient}</span>
+                        <span class="questionnaire-title">Questionnaire Post-Greffe - ${patientLabel}</span>
                         <span class="questionnaire-date">07/10/2025</span>
                     </div>
                     <div class="questionnaire-data">
@@ -1888,8 +1914,6 @@ body {
                     </div>
                 </div>
             `;
-
-            alert(`✅ Données chargées pour ${patient}`);
         }
 
         // Messagerie
