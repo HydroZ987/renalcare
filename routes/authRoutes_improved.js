@@ -2,9 +2,15 @@ const express = require('express');
 const { supabase, supabaseAdmin } = require('../services/supabaseClient');
 const { verifyToken, verifyRole } = require('../middleware/auth');
 const sql = require('../db');
-const bcrypt = require('bcrypt');
+
+const crypto = require('crypto');
 
 const router = express.Router();
+
+// Hash util (SHA-256) pour rester compatible avec les mots de passe déjà stockés
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
 
 // ===== CONNEXION UNIFIÉE (Auto-détection du rôle) =====
 
@@ -46,8 +52,7 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Hasher le mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = hashPassword(password);
 
     // id_utilisateur_medecin est NULL par défaut (sera assigné plus tard pour les patients)
     const id_utilisateur_medecin = null;
@@ -150,8 +155,7 @@ router.post('/patient/register', async (req, res) => {
       });
     }
 
-    // Hasher le mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = hashPassword(password);
 
     // UPDATE l'utilisateur existant avec le nouveau mot de passe, numéro de sécurité sociale et infos complètes
     const updatedUsers = await sql`
@@ -214,8 +218,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
 
-    // Vérifier le mot de passe (hash)
-    const match = await bcrypt.compare(password, dbUser.mdp);
+    const match = hashPassword(password) === dbUser.mdp;
     if (!match) {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
@@ -272,8 +275,7 @@ router.post('/patient/login', async (req, res) => {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }
 
-    // Vérifier le mot de passe (hash)
-    const match = await bcrypt.compare(password, dbUser.mdp);
+    const match = hashPassword(password) === dbUser.mdp;
     if (!match) {
       return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
     }

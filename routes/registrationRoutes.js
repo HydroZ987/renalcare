@@ -87,7 +87,7 @@ router.post('/verify-code', (req, res) => {
  * Finalise l'inscription en mettant à jour l'utilisateur pré-créé
  */
 router.post('/complete', async (req, res) => {
-  const { 
+  const {   
     email, password, nom, prenom, telephone, adresse, role,
     specialite, numero_licence, grade, adresse_hopital,
     securite_sociale, date_greffe, maladie, groupe_sanguin, poids, taille, allergies, genre, date_naissance

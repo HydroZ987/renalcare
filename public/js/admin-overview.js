@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
         loadStats();
     }
 
+    // Empêcher l'accès sans session admin
+        // Empêcher l'accès sans session admin et bloquer le retour arrière
+        enforceAdminSession();
+        preventBackNavigation('admin');
+
     // Écouter les changements d'onglets pour recharger si nécessaire
     const overviewTabBtn = document.querySelector('[onclick="navigateTo(\'overview\')"]');
     if (overviewTabBtn) {
@@ -25,6 +30,32 @@ async function loadStats() {
     } catch (err) {
         console.error('Erreur chargement stats:', err);
     }
+}
+
+// Vérifie la session admin, sinon redirige vers l'accueil
+function enforceAdminSession() {
+    const role = localStorage.getItem('user_role');
+    const name = localStorage.getItem('user_name');
+    if (!name || role !== 'admin') {
+        window.location.replace('/');
+    }
+}
+
+// Empêche de revenir au dashboard via le bouton retour si non authentifié
+function preventBackNavigation(expectedRole) {
+    history.replaceState(null, '', location.href);
+    const guard = () => {
+        const role = localStorage.getItem('user_role');
+        if (role !== expectedRole) {
+            window.location.replace('/');
+        }
+    };
+    window.addEventListener('popstate', guard);
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            guard();
+        }
+    });
 }
 
 function updateStatDisplay(stats) {

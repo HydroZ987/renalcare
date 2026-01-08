@@ -24,7 +24,7 @@ const authenticateMedecin = async (req, res, next) => {
         // Récupérer les infos du médecin depuis la table utilisateur
         const medecins = await sql`
             SELECT * FROM utilisateur 
-            WHERE id = ${userId} AND role = 'Medecin'
+            WHERE id = ${userId} AND LOWER(role) = 'medecin'
         `;
 
         if (!medecins || medecins.length === 0) {

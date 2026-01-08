@@ -2,6 +2,9 @@
 // admin-users.js - Gestion des utilisateurs pour le dashboard admin
 
 document.addEventListener('DOMContentLoaded', () => {
+    enforceAdminSession();
+    preventBackNavigation('admin');
+
     // Charger les utilisateurs si on est sur la page users
     if (document.getElementById('page-users')) {
         loadUsers();
@@ -13,6 +16,32 @@ document.addEventListener('DOMContentLoaded', () => {
         usersTabBtn.addEventListener('click', loadUsers);
     }
 });
+
+// Vérifie la session admin, sinon redirige vers l'accueil
+function enforceAdminSession() {
+    const role = localStorage.getItem('user_role');
+    const name = localStorage.getItem('user_name');
+    if (!name || role !== 'admin') {
+        window.location.replace('/');
+    }
+}
+
+// Empêche de revenir au dashboard via le bouton retour si non authentifié
+function preventBackNavigation(expectedRole) {
+    history.replaceState(null, '', location.href);
+    const guard = () => {
+        const role = localStorage.getItem('user_role');
+        if (role !== expectedRole) {
+            window.location.replace('/');
+        }
+    };
+    window.addEventListener('popstate', guard);
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            guard();
+        }
+    });
+}
 
 let allUsers = []; // Stockage local pour le filtrage
 
