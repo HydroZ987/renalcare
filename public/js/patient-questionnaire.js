@@ -988,24 +988,49 @@ function copyToClipboard() {
 
   const textSummary = generateMedicalSummary(formData, lastAnalysisResults)
 
-  navigator.clipboard.writeText(textSummary).then(() => {
-    // Feedback visuel temporaire
-    const btn = document.querySelector('button[onclick="copyToClipboard()"]')
-    if (btn) {
-      const originalText = btn.innerHTML
-      btn.innerHTML = `
-        <svg class="w-4 h-4" style="margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        Copié !
-      `
-      setTimeout(() => {
-        btn.innerHTML = originalText
-      }, 2000)
+  copyTextWithFallback(textSummary)
+    .then(() => {
+      const btn = document.querySelector('button[onclick="copyToClipboard()"]')
+      if (btn) {
+        const originalText = btn.innerHTML
+        btn.innerHTML = `
+          <svg class="w-4 h-4" style="margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          Copié !
+        `
+        setTimeout(() => {
+          btn.innerHTML = originalText
+        }, 2000)
+      }
+    })
+    .catch((err) => {
+      console.error('Erreur lors de la copie :', err)
+      alert('Impossible de copier le texte automatiquement. Copiez manuellement :\n' + textSummary)
+    })
+}
+
+function copyTextWithFallback(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text)
+  }
+
+  return new Promise((resolve, reject) => {
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'fixed'
+      textarea.style.top = '-9999px'
+      document.body.appendChild(textarea)
+      textarea.select()
+      const ok = document.execCommand('copy')
+      document.body.removeChild(textarea)
+      if (!ok) return reject(new Error('execCommand copy a échoué'))
+      resolve()
+    } catch (err) {
+      reject(err)
     }
-  }).catch(err => {
-    console.error('Erreur lors de la copie :', err)
-    alert('Impossible de copier le texte automatiquement.')
   })
 }
 
