@@ -27,7 +27,7 @@
                 <div class="header-right">
                     <div class="notification-icon" onclick="navigateTo('notifications')">
                         🔔
-                        <span class="notification-badge">8</span>
+                        <span class="notification-badge" id="notif-badge">0</span>
                     </div>
                     <div class="user-profile">
                         <div class="user-avatar">AD</div>
@@ -75,7 +75,7 @@
                         </div>
                         <div class="stat-card yellow">
                             <div class="stat-info">
-                                <h3>12</h3>
+                                <h3 id="stat-notifications">—</h3>
                                 <p>Notifications</p>
                             </div>
                             <div class="stat-icon">🔔</div>
@@ -382,39 +382,14 @@
                             <button class="btn-primary">Marquer toutes comme lues</button>
                         </div>
 
-                        <div class="notification-item unread">
-                            <div class="activity-icon">⏳</div>
-                            <div class="activity-content">
-                                <div class="activity-title">8 nouveaux comptes en attente</div>
-                                <div class="activity-details">Des utilisateurs attendent votre validation</div>
-                                <div class="activity-time">Il y a 30 minutes</div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item unread">
-                            <div class="activity-icon">🎧</div>
-                            <div class="activity-content">
-                                <div class="activity-title">3 tickets support urgents</div>
-                                <div class="activity-details">Des problèmes nécessitent votre attention immédiate</div>
-                                <div class="activity-time">Il y a 1 heure</div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item">
-                            <div class="activity-icon">📊</div>
-                            <div class="activity-content">
-                                <div class="activity-title">Rapport hebdomadaire disponible</div>
-                                <div class="activity-details">Le rapport d'activité de la semaine est prêt</div>
-                                <div class="activity-time">Il y a 3 heures</div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item">
-                            <div class="activity-icon">🔔</div>
-                            <div class="activity-content">
-                                <div class="activity-title">Mise à jour système disponible</div>
-                                <div class="activity-details">Version 2.1.5 prête à être installée</div>
-                                <div class="activity-time">Hier 16h30</div>
+                        <div id="notifications-list">
+                            <div class="notification-item">
+                                <div class="activity-icon">⏳</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Chargement...</div>
+                                    <div class="activity-details">Récupération des alertes</div>
+                                    <div class="activity-time">...</div>
+                                </div>
                             </div>
                         </div>
                     </div>

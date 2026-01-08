@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logsPage && logsPage.classList.contains('active')) {
         loadLogs();
     }
+
+    // Charger les notifications dès l'arrivée
+    loadNotifications();
 });
 
 async function loadStats() {
@@ -70,6 +73,7 @@ function updateStatDisplay(stats) {
     animateValue('stat-patients', stats.patients);
     animateValue('stat-medecins', stats.medecins);
     animateValue('stat-pending', stats.pending);
+    animateValue('stat-notifications', stats.notifications ?? 0);
     
     // Mise à jour du bouton d'accès rapide
     const pendingBtn = document.getElementById('btn-quick-pending');
@@ -101,6 +105,50 @@ function updateActivityList(activities) {
                 <div class="activity-title">Nouvelle demande d'inscription</div>
                 <div class="activity-details">${req.type === 'medecin' ? 'Médecin' : 'Patient'}: ${req.prenom} ${req.nom}</div>
                 <div class="activity-time">En attente</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Notifications / alertes
+async function loadNotifications() {
+    try {
+        const res = await fetch('/api/admin/notifications');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Erreur notifications');
+
+        renderNotifications(data.notifications || []);
+        updateBell(data.unread || 0);
+    } catch (err) {
+        console.error('Notifications admin:', err);
+        renderNotifications([]);
+        updateBell(0);
+    }
+}
+
+function updateBell(count) {
+    const badge = document.getElementById('notif-badge');
+    if (badge) {
+        badge.textContent = count;
+    }
+}
+
+function renderNotifications(items) {
+    const container = document.getElementById('notifications-list');
+    if (!container) return;
+
+    if (!items.length) {
+        container.innerHTML = `<div class="notification-item"><div class="activity-icon">ℹ️</div><div class="activity-content"><div class="activity-title">Aucune alerte</div><div class="activity-details">Vous êtes à jour</div><div class="activity-time">—</div></div></div>`;
+        return;
+    }
+
+    container.innerHTML = items.map((n) => `
+        <div class="notification-item ${n.unread ? 'unread' : ''}">
+            <div class="activity-icon">${n.icon || '🔔'}</div>
+            <div class="activity-content">
+                <div class="activity-title">${escapeHtml(n.title)}</div>
+                <div class="activity-details">${escapeHtml(n.detail || '')}</div>
+                <div class="activity-time">${escapeHtml(n.time || '')}</div>
             </div>
         </div>
     `).join('');

@@ -161,6 +161,30 @@ router.get('/logs', async (req, res) => {
   }
 });
 
+// Notifications / alertes administrateur (données issues des demandes en attente)
+router.get('/notifications', (req, res) => {
+  try {
+    const pending = pendingRequestsStore.getAll() || [];
+    const items = pending.slice(-5).reverse().map((p, idx) => ({
+      id: p.id || idx,
+      title: 'Nouvelle demande en attente',
+      detail: `${p.type === 'medecin' ? 'Médecin' : 'Patient'}: ${p.prenom} ${p.nom}`,
+      time: p.createdAt || 'Récemment',
+      icon: '⏳',
+      unread: true,
+    }));
+
+    res.json({
+      success: true,
+      notifications: items,
+      unread: items.length,
+    });
+  } catch (err) {
+    console.error('Erreur notifications admin:', err);
+    res.status(500).json({ success: false, error: 'Impossible de charger les notifications.' });
+  }
+});
+
 // Télécharger le fichier brut de logs
 router.get('/logs/download', async (_req, res) => {
   try {
@@ -337,6 +361,7 @@ router.get('/stats', async (req, res) => {
         patients: totalPatients,
         medecins: totalMedecins,
         pending: pendingCount,
+        notifications: pendingCount,
         recentActivity: recentPending
       }
     });
