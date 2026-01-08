@@ -137,7 +137,8 @@ const messageOperations = {
             .from('messages')
             .select('*')
             .or(`and(patient_id.eq.${patientId},medecin_id.eq.${medecinId}),and(patient_id.eq.${medecinId},medecin_id.eq.${patientId})`)
-            .order('created_at', { ascending: true });
+            // Tri retiré car la colonne created_at peut être absente selon le schéma
+            ;
         return { data, error };
     },
 

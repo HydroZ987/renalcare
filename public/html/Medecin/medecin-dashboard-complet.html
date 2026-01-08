@@ -523,6 +523,62 @@ body {
     color: #8e44ad;
 }
 
+/* Suivi - Grids & tiles */
+.questionnaire-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.questionnaire-grid.two-col {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.data-tile {
+    background: #f8f9fb;
+    border: 1px solid #e6e9ef;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.data-tile .data-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.data-tile .data-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.data-tile .data-hint {
+    font-size: 11px;
+    color: #888;
+    margin-top: 6px;
+}
+
+.data-tile.muted {
+    background: #f3f4f6;
+    color: #7a7a7a;
+}
+
+.questionnaire-subtitle {
+    font-size: 12px;
+    color: #777;
+}
+
+.questionnaire-note {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #666;
+}
+
 /* Modal */
 .modal {
     display: none;
@@ -813,7 +869,6 @@ body {
 
                         <div class="search-bar">
                             <input type="text" class="search-input" placeholder="Rechercher un patient...">
-                            <button class="btn-primary">🔍 Rechercher</button>
                         </div>
 
                         <div class="tabs">
@@ -832,14 +887,8 @@ body {
                 <!-- PAGE 3: GESTION DES PATIENTS -->
                 <div id="page-gestion" class="page">
                     <div class="card">
-                        <div class="card-header">
-                            <h2>Gestion des Patients</h2>
-                            <button class="btn-primary" onclick="openAddPatientModal()">+ Ajouter un patient</button>
-                        </div>
-
                         <div class="search-bar">
                             <input type="text" class="search-input" placeholder="Rechercher un patient à modifier...">
-                            <button class="btn-primary">🔍 Rechercher</button>
                         </div>
 
                         <div id="managePatientsList">
@@ -858,7 +907,6 @@ body {
 
                         <div class="search-bar">
                             <input type="text" id="searchUnassignedPatient" class="search-input" placeholder="Rechercher un patient...">
-                            <button class="btn-primary" onclick="searchUnassignedPatients()">🔍 Rechercher</button>
                         </div>
 
                         <div id="unassignedPatientsList" style="margin-top: 20px;">
@@ -874,18 +922,17 @@ body {
                             <h2>Suivi des Données Patients</h2>
                         </div>
 
-                        <div class="search-bar">
-                            <select id="patientSelect" class="search-input" onchange="loadPatientData()">
-                                <option value="">Sélectionner un patient...</option>
-                            </select>
-                            <button class="btn-primary" onclick="loadPatientData()">Charger les données</button>
+                        <div id="suiviNotice" style="display:none; margin: 12px 0; padding: 10px 12px; background: #e8f4ff; color: #1f4f7a; border-left: 4px solid #1f6feb; border-radius: 8px; font-size: 14px;">
+                            Données chargées.
                         </div>
 
-                        <div class="tabs">
-                            <button class="tab active" onclick="showSuiviTab('constantes')">Constantes</button>
-                            <button class="tab" onclick="showSuiviTab('symptomes')">Symptômes</button>
-                            <button class="tab" onclick="showSuiviTab('traitements')">Traitements</button>
-                            <button class="tab" onclick="showSuiviTab('questionnaires')">Questionnaires</button>
+                        <div class="search-bar" style="gap: 12px; flex-wrap: wrap;">
+                            <input type="text" id="patientSelectSearchTop" class="search-input" placeholder="Rechercher un patient (nom, téléphone, email)..." style="flex:1 1 260px;">
+                        </div>
+
+                        <div class="search-bar" style="gap: 12px; flex-wrap: wrap;">
+                            <div id="patientSelectList" class="search-results" style="width:100%; max-height: 260px; overflow-y: auto; display: grid; gap: 8px;"></div>
+                            <select id="patientSelectHidden" style="display:none;"></select>
                         </div>
 
                         <!-- Tab Constantes -->
@@ -893,28 +940,28 @@ body {
                             <div class="stats-grid">
                                 <div class="stat-card purple">
                                     <div class="stat-info">
-                                        <h3 id="creatinine-value">165</h3>
+                                        <h3 id="creatinine-value">—</h3>
                                         <p>Créatinine (mg/L)</p>
                                     </div>
                                     <div class="stat-icon">📊</div>
                                 </div>
                                 <div class="stat-card blue">
                                     <div class="stat-info">
-                                        <h3 id="tension-value">125/80</h3>
+                                        <h3 id="tension-value">—</h3>
                                         <p>Tension (mmHg)</p>
                                     </div>
                                     <div class="stat-icon">❤️</div>
                                 </div>
                                 <div class="stat-card green">
                                     <div class="stat-info">
-                                        <h3 id="temperature-value">37.0°C</h3>
+                                        <h3 id="temperature-value">—</h3>
                                         <p>Température</p>
                                     </div>
                                     <div class="stat-icon">🌡️</div>
                                 </div>
                                 <div class="stat-card orange">
                                     <div class="stat-info">
-                                        <h3 id="poids-value">68 kg</h3>
+                                        <h3 id="poids-value">—</h3>
                                         <p>Poids</p>
                                     </div>
                                     <div class="stat-icon">⚖️</div>
@@ -1778,14 +1825,234 @@ body {
             event.target.classList.add('active');
         }
 
-        // Load Patient Data
-        function loadPatientData() {
-            const patient = document.getElementById('patientSelect').value;
+        async function fetchPatientResponses(patientId) {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return [];
 
-            if (!patient) {
-                alert('Veuillez sélectionner un patient');
+            const resp = await fetch(`/api/medecin/patients/${patientId}/reponses`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            return data?.success ? (data.responses || []) : [];
+        }
+
+        async function fetchPatientTreatments(patientId) {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return [];
+
+            const resp = await fetch(`/api/medecin/patients/${patientId}/traitements`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            return data?.success ? (data.traitements || []) : [];
+        }
+
+        function renderPatientVitals(responses, patientLabel) {
+            const today = responses?.[0] || {};
+            const prev = responses?.[1] || {};
+            const formatTension = (row) => (row && row.tension_systolique && row.tension_diastolique)
+                ? `${row.tension_systolique}/${row.tension_diastolique}`
+                : '—';
+
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value ?? '—';
+            };
+
+            // Cartes constantes
+            setText('creatinine-value', today.creatinine ?? '—');
+            setText('tension-value', formatTension(today));
+            setText('temperature-value', today.temperature ?? '—');
+            setText('poids-value', today.poids ?? '—');
+
+            // Questionnaires
+            const questionnairesData = document.getElementById('questionnairesData');
+            if (questionnairesData) {
+                questionnairesData.innerHTML = `
+                    <div class="questionnaire-item">
+                        <div class="questionnaire-header">
+                            <div>
+                                <span class="questionnaire-title">Questionnaire Post-Greffe</span>
+                                <div class="questionnaire-subtitle">${patientLabel || 'Patient'}</div>
+                            </div>
+                            <span class="questionnaire-date">Dernière réponse</span>
+                        </div>
+                        <div class="questionnaire-grid">
+                            <div class="data-tile">
+                                <div class="data-label">Poids</div>
+                                <div class="data-value">${today.poids ?? '—'} kg</div>
+                            </div>
+                            <div class="data-tile">
+                                <div class="data-label">Tension</div>
+                                <div class="data-value">${formatTension(today)}</div>
+                            </div>
+                            <div class="data-tile">
+                                <div class="data-label">Température</div>
+                                <div class="data-value">${today.temperature ?? '—'}°C</div>
+                            </div>
+                            <div class="data-tile">
+                                <div class="data-label">Créatinine</div>
+                                <div class="data-value">${today.creatinine ?? '—'} mg/L</div>
+                            </div>
+                        </div>
+                        <p class="questionnaire-note">
+                            État récent basé sur la dernière réponse disponible.
+                        </p>
+                    </div>
+                    <div class="questionnaire-item">
+                        <div class="questionnaire-header">
+                            <div>
+                                <span class="questionnaire-title">Questionnaire Post-Greffe</span>
+                                <div class="questionnaire-subtitle">${patientLabel || 'Patient'}</div>
+                            </div>
+                            <span class="questionnaire-date">Réponse précédente</span>
+                        </div>
+                        <div class="questionnaire-grid">
+                            <div class="data-tile muted">
+                                <div class="data-label">Poids</div>
+                                <div class="data-value">${prev.poids ?? '—'} kg</div>
+                            </div>
+                            <div class="data-tile muted">
+                                <div class="data-label">Tension</div>
+                                <div class="data-value">${formatTension(prev)}</div>
+                            </div>
+                            <div class="data-tile muted">
+                                <div class="data-label">Température</div>
+                                <div class="data-value">${prev.temperature ?? '—'}°C</div>
+                            </div>
+                            <div class="data-tile muted">
+                                <div class="data-label">Créatinine</div>
+                                <div class="data-value">${prev.creatinine ?? '—'} mg/L</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderTraitementsPlaceholder(patientLabel) {
+            return `
+                <div class="questionnaire-item">
+                    <div class="questionnaire-header">
+                        <div>
+                            <span class="questionnaire-title">Traitements</span>
+                            <div class="questionnaire-subtitle">${patientLabel || 'Patient'}</div>
+                        </div>
+                        <span class="questionnaire-date">Derniers enregistrements</span>
+                    </div>
+                    <div class="questionnaire-grid two-col">
+                        <div class="data-tile">
+                            <div class="data-label">Médicament</div>
+                            <div class="data-value">—</div>
+                            <div class="data-hint">Matin / Soir • Observance</div>
+                        </div>
+                        <div class="data-tile">
+                            <div class="data-label">Médicament</div>
+                            <div class="data-value">—</div>
+                            <div class="data-hint">Matin / Soir • Observance</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTraitements(traitements, patientLabel) {
+            if (!traitements?.length) {
+                return renderTraitementsPlaceholder(patientLabel);
+            }
+
+            const items = traitements.map((t) => {
+                const date = t.date ? new Date(t.date).toLocaleDateString('fr-FR') : '';
+                const lines = (t.prescription || '').split('\n').filter(Boolean).slice(0, 3);
+                const content = lines.length ? lines.join('<br>') : '—';
+                return `
+                    <div class="data-tile">
+                        <div class="data-label">${date || 'Prescription'}</div>
+                        <div class="data-value" style="font-size:14px; line-height:1.4;">${content}</div>
+                        <div class="data-hint">Entrée de suivi</div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="questionnaire-item">
+                    <div class="questionnaire-header">
+                        <div>
+                            <span class="questionnaire-title">Traitements</span>
+                            <div class="questionnaire-subtitle">${patientLabel || 'Patient'}</div>
+                        </div>
+                        <span class="questionnaire-date">Derniers enregistrements</span>
+                    </div>
+                    <div class="questionnaire-grid two-col">
+                        ${items}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuestionnairePlaceholder(patientLabel) {
+            return `
+                <div class="questionnaire-item" style="text-align:center;">
+                    <div class="questionnaire-header" style="justify-content:center;">
+                        <div>
+                            <span class="questionnaire-title">Questionnaires</span>
+                            <div class="questionnaire-subtitle">${patientLabel || 'Sélectionnez un patient'}</div>
+                        </div>
+                    </div>
+                    <p class="questionnaire-note" style="margin-top:6px;">Aucune donnée affichée tant qu'un patient n'est pas choisi.</p>
+                </div>
+            `;
+        }
+
+        function resetSuiviUI() {
+            const resetCards = () => {
+                const map = {
+                    'creatinine-value': '—',
+                    'tension-value': '—',
+                    'temperature-value': '—',
+                    'poids-value': '—'
+                };
+                Object.entries(map).forEach(([id, val]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = val;
+                });
+            };
+
+            const questionnairesData = document.getElementById('questionnairesData');
+            if (questionnairesData) {
+                questionnairesData.innerHTML = renderQuestionnairePlaceholder('');
+            }
+
+            const symptomesData = document.getElementById('symptomesData');
+            if (symptomesData) {
+                symptomesData.innerHTML = `<p style="text-align: center; color: #666; padding: 40px;">Sélectionnez un patient pour voir les symptômes</p>`;
+            }
+
+            const traitementsData = document.getElementById('traitementsData');
+            if (traitementsData) {
+                traitementsData.innerHTML = renderTraitementsPlaceholder('');
+            }
+
+            resetCards();
+        }
+
+        // Load Patient Data
+        async function loadPatientData() {
+            const selectEl = document.getElementById('patientSelectHidden');
+            const patientId = selectEl.value;
+            const patientLabel = selectEl.options[selectEl.selectedIndex]?.textContent || '';
+            const notice = document.getElementById('suiviNotice');
+
+            if (!patientId) {
+                resetSuiviUI();
                 return;
             }
+
+            const responses = await fetchPatientResponses(patientId);
+            const traitements = await fetchPatientTreatments(patientId);
+            renderPatientVitals(responses, patientLabel);
 
             // Charger symptômes
             document.getElementById('symptomesData').innerHTML = `
@@ -1793,106 +2060,42 @@ body {
                     <span class="alert-icon">📋</span>
                     <div class="alert-content">
                         <h4>14/10/2025 - Légère fatigue</h4>
-                        <p>Intensité: 3/10 • Patient: ${patient}</p>
+                        <p>Intensité: 3/10 • Patient: ${patientLabel}</p>
                     </div>
                 </div>
                 <div class="alert alert-warning">
                     <span class="alert-icon">⚠️</span>
                     <div class="alert-content">
                         <h4>10/10/2025 - Douleur au greffon</h4>
-                        <p>Intensité: 5/10 • Patient: ${patient}</p>
+                        <p>Intensité: 5/10 • Patient: ${patientLabel}</p>
                     </div>
                 </div>
             `;
+
+            if (notice) {
+                notice.innerHTML = `
+                    <strong>✅ Données chargées</strong><br>
+                    <span style="font-weight:500;">${patientLabel}</span>
+                `;
+                notice.style.display = 'block';
+                notice.style.opacity = '1';
+                notice.style.transform = 'translateY(0)';
+                setTimeout(() => {
+                    notice.style.opacity = '0';
+                    notice.style.transform = 'translateY(-6px)';
+                }, 2000);
+                setTimeout(() => {
+                    notice.style.display = 'none';
+                    notice.style.transform = 'translateY(0)';
+                }, 2600);
+            }
 
             // Charger traitements
-            document.getElementById('traitementsData').innerHTML = `
-                <div class="questionnaire-item">
-                    <div class="questionnaire-header">
-                        <span class="questionnaire-title">Advagraf 5mg</span>
-                        <span class="questionnaire-date">Pris aujourd'hui ✓</span>
-                    </div>
-                    <div class="questionnaire-data">
-                        <div class="data-point">
-                            <div class="data-label">Matin</div>
-                            <div class="data-value">✅ 08:00</div>
-                        </div>
-                        <div class="data-point">
-                            <div class="data-label">Soir</div>
-                            <div class="data-value">⏰ 20:00</div>
-                        </div>
-                        <div class="data-point">
-                            <div class="data-label">Observance</div>
-                            <div class="data-value">95%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="questionnaire-item">
-                    <div class="questionnaire-header">
-                        <span class="questionnaire-title">Certican 0.75mg</span>
-                        <span class="questionnaire-date">Pris aujourd'hui ✓</span>
-                    </div>
-                    <div class="questionnaire-data">
-                        <div class="data-point">
-                            <div class="data-label">Matin</div>
-                            <div class="data-value">✅ 08:00</div>
-                        </div>
-                        <div class="data-point">
-                            <div class="data-label">Observance</div>
-                            <div class="data-value">98%</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Charger questionnaires
-            document.getElementById('questionnairesData').innerHTML = `
-                <div class="questionnaire-item">
-                    <div class="questionnaire-header">
-                        <span class="questionnaire-title">Questionnaire Post-Greffe - ${patient}</span>
-                        <span class="questionnaire-date">14/10/2025</span>
-                    </div>
-                    <div class="questionnaire-data">
-                        <div class="data-point">
-                            <div class="data-label">Poids</div>
-                            <div class="data-value">68 kg</div>
-                        </div>
-                        <div class="data-point">
-                            <div class="data-label">Tension</div>
-                            <div class="data-value">125/80</div>
-                        </div>
-                        <div class="data-point">
-                            <div class="data-label">Température</div>
-                            <div class="data-value">36.8°C</div>
-                        </div>
-                    </div>
-                    <p style="margin-top: 10px; font-size: 13px; color: #666;">
-                        État général: Bon • Traitement bien toléré • Aucun effet secondaire signalé
-                    </p>
-                </div>
-                <div class="questionnaire-item">
-                    <div class="questionnaire-header">
-                        <span class="questionnaire-title">Questionnaire Post-Greffe - ${patient}</span>
-                        <span class="questionnaire-date">07/10/2025</span>
-                    </div>
-                    <div class="questionnaire-data">
-                        <div class="data-point">
-                            <div class="data-label">Poids</div>
-                            <div class="data-value">67.5 kg</div>
-                        </div>
-                        <div class="data-point">
-                            <div class="data-label">Tension</div>
-                            <div class="data-value">122/78</div>
-                        </div>
-                        <div class="data-point">
-                            <div class="data-label">Température</div>
-                            <div class="data-value">36.9°C</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            alert(`✅ Données chargées pour ${patient}`);
+            document.getElementById('traitementsData').innerHTML = renderTraitements(traitements, patientLabel);
+            const questionnairesData = document.getElementById('questionnairesData');
+            if (!responses?.length && questionnairesData) {
+                questionnairesData.innerHTML = renderQuestionnairePlaceholder(patientLabel);
+            }
         }
 
         // Messagerie

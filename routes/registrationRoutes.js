@@ -2,9 +2,14 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('../db');
-const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 const { sendOtpEmail } = require('../services/mailService');
+
+// Hash util (SHA-256) pour rester compatible avec le login
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
 
 const otpStore = new Map();
 // structure : email -> { code, expiresAt, role }
@@ -112,7 +117,7 @@ router.post('/complete', async (req, res) => {
     }
 
     const user = existingUsers[0];
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = hashPassword(password);
     
     // Capitaliser le rôle
     const userRole = role ? (role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()) : user.role;
