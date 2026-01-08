@@ -1,5 +1,11 @@
 // patient-appointments.js - Gestion des rendez-vous pour le dashboard patient
 
+// Store assigned doctor info
+let assignedDoctor = {
+    id: null,
+    name: null
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // Vérifier que l'utilisateur est connecté et est un patient
     const userName = localStorage.getItem('user_name');
@@ -9,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!userName || userRole !== 'patient') {
         return;
     }
+
+    // Load patient's assigned doctor
+    loadAssignedDoctor();
 
     // Charger les rendez-vous à venir et passés
     loadAppointments();
@@ -42,9 +51,9 @@ function createAppointmentModal() {
                 </div>
                 <div class="form-group">
                     <label for="appointmentDoctor">Médecin</label>
-                    <select id="appointmentDoctor" required>
-                        <option value="">Choisir un médecin...</option>
-                    </select>
+                    <div id="assignedDoctorDisplay" style="padding: 10px; background-color: #f5f5f5; border-radius: 4px; border: 1px solid #ddd;">
+                        <span id="doctorName">Chargement...</span>
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" onclick="closeAppointmentModal()">Annuler</button>
@@ -55,17 +64,21 @@ function createAppointmentModal() {
     `;
     document.body.appendChild(modal);
 
-    // Load doctors into dropdown
-    loadDoctorsForDropdown();
-
     // Handle form submission
     document.getElementById('appointmentForm').addEventListener('submit', handleAppointmentSubmit);
 }
 
-async function loadDoctorsForDropdown() {
+async function loadAssignedDoctor() {
     try {
+        const userId = localStorage.getItem('user_id');
         const token = localStorage.getItem('auth_token');
-        const response = await fetch('/api/patients/doctors/list', {
+
+        if (!userId) {
+            console.error('User ID not found');
+            return;
+        }
+
+        const response = await fetch(`/api/patients/${userId}/dashboard`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -73,49 +86,53 @@ async function loadDoctorsForDropdown() {
         });
 
         const data = await response.json();
-        console.log('Doctors response:', data);
 
-        if (data.success && data.doctors && data.doctors.length > 0) {
-            const select = document.getElementById('appointmentDoctor');
-            data.doctors.forEach(doctor => {
-                const option = document.createElement('option');
-                option.value = doctor.id;
-                option.textContent = `Dr. ${doctor.prenom} ${doctor.nom}`;
-                select.appendChild(option);
-            });
+        if (data.success && data.info && data.info.medecin_id) {
+            assignedDoctor.id = data.info.medecin_id;
+            assignedDoctor.name = data.info.medecin || 'Médecin non assigné';
+
+            // Update display in modal if it exists
+            const doctorNameEl = document.getElementById('doctorName');
+            if (doctorNameEl) {
+                doctorNameEl.textContent = assignedDoctor.name ? `Dr. ${assignedDoctor.name}` : 'Médecin non assigné';
+            }
         } else {
-            console.warn('No doctors found or error:', data);
-            const select = document.getElementById('appointmentDoctor');
-            if (select) {
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'Aucun médecin disponible';
-                option.disabled = true;
-                select.appendChild(option);
+            console.warn('No assigned doctor found');
+            assignedDoctor.id = null;
+            assignedDoctor.name = 'Médecin non assigné';
+
+            const doctorNameEl = document.getElementById('doctorName');
+            if (doctorNameEl) {
+                doctorNameEl.textContent = 'Médecin non assigné';
             }
         }
     } catch (error) {
-        console.error('Erreur chargement médecins:', error);
-        const select = document.getElementById('appointmentDoctor');
-        if (select) {
-            const option = document.createElement('option');
-            option.value = '';
-            option.textContent = 'Erreur lors du chargement';
-            option.disabled = true;
-            select.appendChild(option);
+        console.error('Erreur chargement médecin assigné:', error);
+        assignedDoctor.id = null;
+        assignedDoctor.name = 'Erreur lors du chargement';
+
+        const doctorNameEl = document.getElementById('doctorName');
+        if (doctorNameEl) {
+            doctorNameEl.textContent = 'Erreur lors du chargement du médecin';
         }
     }
 }
 
 function openNewAppointmentModal() {
+    if (!assignedDoctor.id) {
+        alert('Aucun médecin assigné. Veuillez contacter l\'administration.');
+        return;
+    }
+
     document.getElementById('modalTitle').textContent = 'Nouveau Rendez-vous';
     document.getElementById('appointmentForm').reset();
     document.getElementById('appointmentForm').dataset.appointmentId = '';
 
-    // Reset doctor dropdown and reload doctors
-    const doctorSelect = document.getElementById('appointmentDoctor');
-    doctorSelect.innerHTML = '<option value="">Choisir un médecin...</option>';
-    loadDoctorsForDropdown();
+    // Update doctor display
+    const doctorNameEl = document.getElementById('doctorName');
+    if (doctorNameEl) {
+        doctorNameEl.textContent = `Dr. ${assignedDoctor.name}`;
+    }
 
     document.getElementById('appointmentModal').classList.add('active');
 }
@@ -274,6 +291,11 @@ function showErrorMessage(containerId, message) {
 async function handleAppointmentSubmit(event) {
     event.preventDefault();
 
+    if (!assignedDoctor.id) {
+        alert('Aucun médecin assigné. Veuillez contacter l\'administration.');
+        return;
+    }
+
     const userId = localStorage.getItem('user_id');
     const token = localStorage.getItem('auth_token');
     const appointmentId = document.getElementById('appointmentForm').dataset.appointmentId;
@@ -286,7 +308,7 @@ async function handleAppointmentSubmit(event) {
     const appointmentData = {
         user_id: userId,
         date: dateTimeLocal,
-        id_utilisateur_medecin: document.getElementById('appointmentDoctor').value,
+        id_utilisateur_medecin: assignedDoctor.id,
         statut: 'En attente' // Always set to pending for new appointments
     };
 
@@ -367,7 +389,12 @@ async function editAppointment(appointmentId) {
         const datetimeLocalValue = `${year}-${month}-${day}T${hours}:${minutes}`;
 
         document.getElementById('appointmentDate').value = datetimeLocalValue;
-        document.getElementById('appointmentDoctor').value = apt.id_utilisateur_medecin;
+
+        // Update doctor display (will be the assigned doctor)
+        const doctorNameEl = document.getElementById('doctorName');
+        if (doctorNameEl) {
+            doctorNameEl.textContent = `Dr. ${assignedDoctor.name}`;
+        }
 
         document.getElementById('appointmentModal').classList.add('active');
     } catch (error) {

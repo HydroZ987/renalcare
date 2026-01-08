@@ -52,6 +52,7 @@ const htmlRoutes = [
   { paths: ['/patient/questionnaire'], file: 'Patient/questionnaire.html' },
   { paths: ['/patient/rendez-vous'], file: 'Patient/rendez-vous.html' },
   { paths: ['/patient/resultat'], file: 'Patient/resultat.html' },
+  { paths: ['/medecin/rendez-vous'], file: 'Medecin/rendez-vous.html' },
 ];
 
 htmlRoutes.forEach(({ paths, file }) => {

@@ -12,11 +12,11 @@ const authenticateMedecin = async (req, res, next) => {
         }
 
         const token = authHeader.substring(7);
-        
+
         // Décoder le token (pour simplifier, on suppose que le token contient l'ID utilisateur)
         // Dans une vraie application, utilisez jsonwebtoken pour décoder et vérifier
         const userId = parseInt(token);
-        
+
         if (!userId) {
             return res.status(401).json({ success: false, message: 'Token invalide' });
         }
@@ -97,8 +97,8 @@ router.post('/affecter-patient', authenticateMedecin, async (req, res) => {
             return res.status(500).json({ success: false, message: 'Erreur lors de l\'affectation' });
         }
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: `Patient ${patient.prenom} ${patient.nom} affecté avec succès`,
             patient: updatedPatients[0]
         });
@@ -227,6 +227,162 @@ router.get('/patients/:patientId/traitements', authenticateMedecin, async (req, 
         return res.json({ success: true, traitements });
     } catch (error) {
         console.error('Erreur lors de la récupération des traitements patient:', error);
+        res.status(500).json({ success: false, message: 'Erreur serveur' });
+    }
+});
+
+// GET all appointments for doctor's patients
+router.get('/appointments', authenticateMedecin, async (req, res) => {
+    try {
+        // Get all patients assigned to this doctor
+        const patients = await sql`
+            SELECT id FROM utilisateur
+            WHERE role = 'Patient'
+            AND id_utilisateur_medecin = ${req.userId}
+        `;
+
+        if (!patients.length) {
+            return res.json({ success: true, appointments: [] });
+        }
+
+        const patientIds = patients.map(p => p.id);
+
+        // Get all appointments for these patients
+        const appointments = await sql`
+            SELECT 
+                r.id,
+                r.date,
+                r.statut,
+                r.id_dossier_medical,
+                u.id as patient_id,
+                u.prenom as patient_prenom,
+                u.nom as patient_nom,
+                u.email as patient_email
+            FROM rdv r
+            JOIN dossier_medical d ON r.id_dossier_medical = d.id
+            JOIN utilisateur u ON d.id_utilisateur = u.id
+            WHERE u.id = ANY(${patientIds})
+            ORDER BY r.date DESC
+        `;
+
+        res.json({ success: true, appointments });
+    } catch (error) {
+        console.error('Erreur chargement rendez-vous:', error);
+        res.status(500).json({ success: false, message: 'Erreur serveur' });
+    }
+});
+
+// GET single appointment for doctor
+router.get('/appointments/:appointmentId', authenticateMedecin, async (req, res) => {
+    try {
+        const appointmentId = req.params.appointmentId;
+
+        // Get appointment and verify it belongs to one of doctor's patients
+        const appointment = await sql`
+            SELECT 
+                r.id,
+                r.date,
+                r.statut,
+                r.id_dossier_medical,
+                u.id as patient_id,
+                u.prenom as patient_prenom,
+                u.nom as patient_nom,
+                u.email as patient_email,
+                u.telephone as patient_telephone
+            FROM rdv r
+            JOIN dossier_medical d ON r.id_dossier_medical = d.id
+            JOIN utilisateur u ON d.id_utilisateur = u.id
+            WHERE r.id = ${appointmentId}
+            AND u.id_utilisateur_medecin = ${req.userId}
+        `;
+
+        if (!appointment.length) {
+            return res.status(404).json({ success: false, message: 'Rendez-vous non trouvé' });
+        }
+
+        res.json({ success: true, appointment: appointment[0] });
+    } catch (error) {
+        console.error('Erreur chargement rendez-vous:', error);
+        res.status(500).json({ success: false, message: 'Erreur serveur' });
+    }
+});
+
+// GET appointments for a specific patient (doctor's patient only)
+router.get('/patients/:patientId/appointments', authenticateMedecin, async (req, res) => {
+    try {
+        const patientId = req.params.patientId;
+
+        // Verify patient is assigned to this doctor
+        const patient = await sql`
+            SELECT id FROM utilisateur
+            WHERE id = ${patientId}
+            AND role = 'Patient'
+            AND id_utilisateur_medecin = ${req.userId}
+        `;
+
+        if (!patient.length) {
+            return res.status(403).json({ success: false, message: 'Accès refusé - Patient non assigné à ce médecin' });
+        }
+
+        // Get appointments for this patient
+        const appointments = await sql`
+            SELECT 
+                r.id,
+                r.date,
+                r.statut,
+                r.id_dossier_medical
+            FROM rdv r
+            JOIN dossier_medical d ON r.id_dossier_medical = d.id
+            WHERE d.id_utilisateur = ${patientId}
+            ORDER BY r.date DESC
+        `;
+
+        res.json({ success: true, appointments });
+    } catch (error) {
+        console.error('Erreur chargement rendez-vous patient:', error);
+        res.status(500).json({ success: false, message: 'Erreur serveur' });
+    }
+});
+
+// PUT update appointment status (Confirmé, Annulé)
+router.put('/appointments/:appointmentId', authenticateMedecin, async (req, res) => {
+    try {
+        const appointmentId = req.params.appointmentId;
+        const { statut } = req.body;
+
+        if (!statut || !['En attente', 'Confirmé', 'Annulé'].includes(statut)) {
+            return res.status(400).json({ success: false, message: 'Statut invalide' });
+        }
+
+        // Verify appointment belongs to one of doctor's patients
+        const appointment = await sql`
+            SELECT r.id
+            FROM rdv r
+            JOIN dossier_medical d ON r.id_dossier_medical = d.id
+            JOIN utilisateur u ON d.id_utilisateur = u.id
+            WHERE r.id = ${appointmentId}
+            AND u.id_utilisateur_medecin = ${req.userId}
+        `;
+
+        if (!appointment.length) {
+            return res.status(403).json({ success: false, message: 'Accès refusé' });
+        }
+
+        // Update appointment status
+        const updated = await sql`
+            UPDATE rdv
+            SET statut = ${statut}
+            WHERE id = ${appointmentId}
+            RETURNING id, date, statut
+        `;
+
+        res.json({
+            success: true,
+            message: `Rendez-vous mis à jour avec succès - Statut: ${statut}`,
+            appointment: updated[0]
+        });
+    } catch (error) {
+        console.error('Erreur mise à jour rendez-vous:', error);
         res.status(500).json({ success: false, message: 'Erreur serveur' });
     }
 });
