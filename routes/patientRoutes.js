@@ -788,9 +788,7 @@ router.post('/appointments/create', async (req, res) => {
 
     const dossierId = dossierResult[0].id;
 
-    // Convert datetime-local to UTC timestamp
-    // datetime-local format: "2025-01-15T09:00" is interpreted by JS as UTC time
-    // To get the actual local time, we need to subtract the timezone offset
+    // Convert datetime-local (interpreted as local) to ISO without manual offset tweaks
     const appointmentDate = new Date(date);
 
     // Create the appointment
@@ -847,7 +845,6 @@ router.put('/appointments/:id', async (req, res) => {
     if (date) {
       const appointmentDate = new Date(date);
       updateData.date = appointmentDate.toISOString();
-
     }
     if (statut) updateData.statut = statut;
 
