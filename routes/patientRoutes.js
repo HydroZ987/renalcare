@@ -792,12 +792,11 @@ router.post('/appointments/create', async (req, res) => {
     // datetime-local format: "2025-01-15T09:00" is interpreted by JS as UTC time
     // To get the actual local time, we need to subtract the timezone offset
     const appointmentDate = new Date(date);
-    const utcDate = new Date(appointmentDate.getTime() - appointmentDate.getTimezoneOffset() * 60000);
 
     // Create the appointment
     const result = await sql`
       INSERT INTO rdv (date, statut, id_dossier_medical, id_utilisateur_medecin)
-      VALUES (${utcDate.toISOString()}, ${statut || 'En attente'}, ${dossierId}, ${id_utilisateur_medecin})
+      VALUES (${appointmentDate.toISOString()}, ${statut || 'En attente'}, ${dossierId}, ${id_utilisateur_medecin})
       RETURNING id, date, statut
     `;
 
@@ -847,8 +846,8 @@ router.put('/appointments/:id', async (req, res) => {
     const updateData = {};
     if (date) {
       const appointmentDate = new Date(date);
-      const utcDate = new Date(appointmentDate.getTime() - appointmentDate.getTimezoneOffset() * 60000);
-      updateData.date = utcDate.toISOString();
+      updateData.date = appointmentDate.toISOString();
+
     }
     if (statut) updateData.statut = statut;
 
