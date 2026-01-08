@@ -197,6 +197,7 @@ router.get('/:id/resultats', authenticatePatient, async (req, res) => {
   }
 });
 
+
 router.post('/:id/questionnaires', async (req, res) => {
   const patientId = req.params.id;
   const {
@@ -252,6 +253,244 @@ router.get('/:id/questionnaires', async (req, res) => {
     res.status(500).json({ error: 'Impossible de récupérer les questionnaires.' });
   }
 });
+
+// Enregistrer les reponses du questionnaire dans la table reponse
+router.post('/:id/reponses', async (req, res) => {
+  const patientId = req.params.id;
+  const requestedDossierId = req.body.id_dossier_medical;
+  const {
+    date_questionnaire,
+    poids,
+    envie_uriner,
+    frequence,
+    frequence_urinaire,
+    douleur_miction,
+    douleur_greffon,
+    maux_ventre,
+    diarrhee,
+    intensite_diarrhee,
+    frissonnement,
+    creatinine,
+    tension_systolique,
+    tension_diastolique,
+    frequence_cardiaque,
+    temperature,
+    glycemie,
+    hemoglobine,
+    cholesterol,
+    tacrolimus_ng,
+    everolimus_ng,
+  } = req.body;
+
+  if (!date_questionnaire) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'date_questionnaire est requis.' });
+  }
+
+  let dossierId;
+  let dossierCreated = false;
+  try {
+    const dossierResolution = await resolveDossierForPatient(patientId, requestedDossierId);
+    dossierId = dossierResolution.dossierId;
+    dossierCreated = dossierResolution.created;
+  } catch (resolveError) {
+    return res.status(400).json({ success: false, error: resolveError.message });
+  }
+
+  if (!dossierId) {
+    return res.status(400).json({
+      success: false,
+      error:
+        'Aucun dossier medical trouve pour ce patient. Merci de fournir id_dossier_medical ou de creer un dossier.',
+    });
+  }
+
+  try {
+    const inserted = await sql`
+      INSERT INTO reponse (
+        date,
+        id_dossier_medical,
+        poids,
+        envie_uriner,
+        frequence,
+        frequence_urinaire,
+        douleur_miction,
+        douleur_greffon,
+        maux_ventre,
+        diarrhee,
+        intensite_diarrhee,
+        frissonnement,
+        creatinine,
+        tension_systolique,
+        tension_diastolique,
+        frequence_cardiaque,
+        temperature,
+        glycemie,
+        hemoglobine,
+        cholesterol,
+        tacrolimus_ng,
+        everolimus_ng
+      )
+      VALUES (
+        ${date_questionnaire},
+        ${dossierId},
+        ${poids ?? null},
+        ${envie_uriner != null ? envie_uriner.toString() : null},
+        ${frequence ?? null},
+        ${frequence_urinaire != null ? frequence_urinaire.toString() : null},
+        ${douleur_miction != null ? douleur_miction.toString() : null},
+        ${douleur_greffon != null ? douleur_greffon.toString() : null},
+        ${maux_ventre != null ? maux_ventre.toString() : null},
+        ${diarrhee === undefined ? false : !!diarrhee},
+        ${diarrhee ? (intensite_diarrhee != null ? intensite_diarrhee.toString() : null) : null},
+        ${frissonnement ?? null},
+        ${creatinine ?? null},
+        ${tension_systolique ?? null},
+        ${tension_diastolique ?? null},
+        ${frequence_cardiaque ?? null},
+        ${temperature ?? null},
+        ${glycemie ?? null},
+        ${hemoglobine ?? null},
+        ${cholesterol ?? null},
+        ${tacrolimus_ng ?? null},
+        ${everolimus_ng ?? null}
+      )
+      RETURNING *
+    `;
+
+    return res.json({
+      success: true,
+      reponse: inserted[0],
+      dossier_id: dossierId,
+      dossier_created: dossierCreated,
+    });
+  } catch (err) {
+    console.error("Erreur lors de l'enregistrement du questionnaire:", err);
+    return res
+      .status(500)
+      .json({ success: false, error: "Impossible d'enregistrer la reponse", details: err.message });
+  }
+});
+
+async function resolveDossierForPatient(patientId, requestedDossierId) {
+  // 1) Si un id est fourni et existe, on l'utilise
+  if (requestedDossierId) {
+    const existing = await sql`select id from dossier_medical where id = ${requestedDossierId} limit 1`;
+    if (existing.length > 0) {
+      return { dossierId: existing[0].id, created: false };
+    }
+  }
+
+  // 2) Vérifier la présence de colonnes usuelles pour lier le dossier au patient
+  const columns = await sql`
+    select column_name
+    from information_schema.columns
+    where table_name = 'dossier_medical'
+  `;
+  const hasCol = (name) => columns.some((c) => c.column_name === name);
+
+  if (hasCol('id_utilisateur')) {
+    const found = await sql`select id from dossier_medical where id_utilisateur = ${patientId} limit 1`;
+    if (found.length > 0) {
+      return { dossierId: found[0].id, created: false };
+    }
+  }
+
+  if (hasCol('id_patient')) {
+    const found = await sql`select id from dossier_medical where id_patient = ${patientId} limit 1`;
+    if (found.length > 0) {
+      return { dossierId: found[0].id, created: false };
+    }
+  }
+
+  if (hasCol('patient_id')) {
+    const found = await sql`select id from dossier_medical where patient_id = ${patientId} limit 1`;
+    if (found.length > 0) {
+      return { dossierId: found[0].id, created: false };
+    }
+  }
+
+  if (hasCol('utilisateur_id')) {
+    const found = await sql`select id from dossier_medical where utilisateur_id = ${patientId} limit 1`;
+    if (found.length > 0) {
+      return { dossierId: found[0].id, created: false };
+    }
+  }
+
+  // 3) En dernier recours, tenter de créer un dossier minimal
+  try {
+    let createdRow;
+    const today = new Date().toISOString().split('T')[0];
+    const hasDateCreation = hasCol('date_creation');
+
+    if (hasCol('id_utilisateur')) {
+      createdRow = hasDateCreation
+        ? await sql`
+            insert into dossier_medical (id_utilisateur, date_creation)
+            values (${patientId}, ${today})
+            returning id
+          `
+        : await sql`
+            insert into dossier_medical (id_utilisateur)
+            values (${patientId})
+            returning id
+          `;
+    } else if (hasCol('id_patient')) {
+      createdRow = hasDateCreation
+        ? await sql`
+            insert into dossier_medical (id_patient, date_creation)
+            values (${patientId}, ${today})
+            returning id
+          `
+        : await sql`
+            insert into dossier_medical (id_patient)
+            values (${patientId})
+            returning id
+          `;
+    } else if (hasCol('patient_id')) {
+      createdRow = hasDateCreation
+        ? await sql`
+            insert into dossier_medical (patient_id, date_creation)
+            values (${patientId}, ${today})
+            returning id
+          `
+        : await sql`
+            insert into dossier_medical (patient_id)
+            values (${patientId})
+            returning id
+          `;
+    } else if (hasCol('utilisateur_id')) {
+      createdRow = hasDateCreation
+        ? await sql`
+            insert into dossier_medical (utilisateur_id, date_creation)
+            values (${patientId}, ${today})
+            returning id
+          `
+        : await sql`
+            insert into dossier_medical (utilisateur_id)
+            values (${patientId})
+            returning id
+          `;
+    } else {
+      createdRow = hasDateCreation
+        ? await sql`
+            insert into dossier_medical (date_creation)
+            values (${today})
+            returning id
+          `
+        : await sql`insert into dossier_medical default values returning id`;
+    }
+
+    return { dossierId: createdRow?.[0]?.id || null, created: true };
+  } catch (err) {
+    console.error('Creation de dossier_medical impossible:', err);
+    throw new Error(
+      "Aucun dossier medical trouve pour ce patient et creation impossible. Fournissez id_dossier_medical explicite."
+    );
+  }
+}
+
 
 // Get all appointments for logged-in patient
 router.get('/appointments/all', async (req, res) => {
