@@ -54,7 +54,6 @@ const INFO_TEXTS = {
 
 let formData = {
   date_questionnaire: new Date().toISOString().split("T")[0],
-  sexe: "",
   poids: "",
   envie_uriner: "",
   frequence: "non",
@@ -77,6 +76,8 @@ let formData = {
   everolimus_ng: "",
 }
 
+let lastAnalysisResults = null
+
 function renderForm() {
   const formContainer = document.getElementById("form-container")
   formContainer.innerHTML = `
@@ -96,20 +97,6 @@ function renderForm() {
                         <div class="form-group">
                             <label for="date_questionnaire">Date du questionnaire</label>
                             <input type="date" id="date_questionnaire" value="${formData.date_questionnaire}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Sexe</label>
-                            <div class="radio-group">
-                                <div class="radio-item">
-                                    <input type="radio" id="sexe-homme" name="sexe" value="Homme" ${formData.sexe === "Homme" ? "checked" : ""}>
-                                    <label for="sexe-homme" style="margin-bottom: 0;">Homme</label>
-                                </div>
-                                <div class="radio-item">
-                                    <input type="radio" id="sexe-femme" name="sexe" value="Femme" ${formData.sexe === "Femme" ? "checked" : ""}>
-                                    <label for="sexe-femme" style="margin-bottom: 0;">Femme</label>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -367,13 +354,6 @@ function setupFormListeners() {
     formData.poids = Number.parseFloat(e.target.value) || ""
   })
 
-  document.querySelectorAll('input[name="sexe"]').forEach((radio) => {
-    radio.addEventListener("change", (e) => {
-      formData.sexe = e.target.value
-      updateNormalValues()
-    })
-  })
-
   document.querySelectorAll('input[name="frequence"]').forEach((radio) => {
     radio.addEventListener("change", (e) => {
       formData.frequence = e.target.value
@@ -436,12 +416,150 @@ function setupFormListeners() {
     renderScaleButtons()
   })
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault()
     if (isFormValid()) {
-      analyzeResults()
+      await handleAnalyzeAndSave()
     }
   })
+}
+
+async function handleAnalyzeAndSave() {
+  const analyzeBtn = document.getElementById("analyzeBtn")
+  const originalInnerHTML = analyzeBtn ? analyzeBtn.innerHTML : ""
+
+  if (analyzeBtn) {
+    analyzeBtn.disabled = true
+    analyzeBtn.innerHTML = "Analyse en cours..."
+  }
+
+  let saveStatus = null
+
+  try {
+    await saveQuestionnaireResponse()
+    saveStatus = { success: true }
+  } catch (error) {
+    console.error("Erreur lors de l'enregistrement du questionnaire:", error)
+    saveStatus = { success: false, message: error.message }
+  }
+
+  analyzeResults(saveStatus)
+
+  if (analyzeBtn) {
+    analyzeBtn.disabled = false
+    analyzeBtn.innerHTML = originalInnerHTML
+  }
+}
+
+async function saveQuestionnaireResponse() {
+  const { patientId, dossierMedicalId } = getPatientIdentifiers()
+
+  if (!patientId) {
+    throw new Error("Connexion requise pour envoyer le questionnaire.")
+  }
+
+  const payload = {
+    id_dossier_medical: dossierMedicalId,
+    date_questionnaire: formData.date_questionnaire,
+    poids: formData.poids === "" ? null : formData.poids,
+    envie_uriner:
+      formData.envie_uriner === "" || formData.envie_uriner == null
+        ? null
+        : formData.envie_uriner.toString(),
+    frequence: formData.frequence || null,
+    frequence_urinaire:
+      formData.frequence_urinaire === "" || formData.frequence_urinaire == null
+        ? null
+        : formData.frequence_urinaire.toString(),
+    douleur_miction:
+      formData.douleur_miction === "" || formData.douleur_miction == null
+        ? null
+        : formData.douleur_miction.toString(),
+    douleur_greffon:
+      formData.douleur_greffon === "" || formData.douleur_greffon == null
+        ? null
+        : formData.douleur_greffon.toString(),
+    maux_ventre:
+      formData.maux_ventre === "" || formData.maux_ventre == null
+        ? null
+        : formData.maux_ventre.toString(),
+    diarrhee: !!formData.diarrhee,
+    intensite_diarrhee:
+      formData.diarrhee && formData.intensite_diarrhee !== "" && formData.intensite_diarrhee != null
+        ? formData.intensite_diarrhee.toString()
+        : null,
+    frissonnement: formData.frissonnement || null,
+    creatinine: formData.creatinine === "" ? null : formData.creatinine,
+    tension_systolique: formData.tension_systolique === "" ? null : formData.tension_systolique,
+    tension_diastolique: formData.tension_diastolique === "" ? null : formData.tension_diastolique,
+    frequence_cardiaque: formData.frequence_cardiaque === "" ? null : formData.frequence_cardiaque,
+    temperature: formData.temperature === "" ? null : formData.temperature,
+    glycemie: formData.glycemie === "" ? null : formData.glycemie,
+    hemoglobine: formData.hemoglobine === "" ? null : formData.hemoglobine,
+    cholesterol: formData.cholesterol === "" ? null : formData.cholesterol,
+    tacrolimus_ng: formData.tacrolimus_ng === "" ? null : formData.tacrolimus_ng,
+    everolimus_ng: formData.everolimus_ng === "" ? null : formData.everolimus_ng,
+  }
+
+  const response = await fetch(`/api/patients/${patientId}/reponses`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+
+  const result = await response.json()
+
+  if (!response.ok || !result.success) {
+    const detail = result.details ? ` (${result.details})` : ""
+    throw new Error((result.error || "Impossible d'enregistrer la reponse.") + detail)
+  }
+
+  // Mémoriser l'id du dossier médical résolu côté serveur pour les prochains envois
+  const dossierIdFromServer = result.dossier_id || result.reponse?.id_dossier_medical
+  if (dossierIdFromServer) {
+    localStorage.setItem("dossier_medical_id", dossierIdFromServer)
+  }
+
+  return result
+}
+
+function getPatientIdentifiers() {
+  const patientId = localStorage.getItem("user_id")
+  const dossierMedicalId = localStorage.getItem("dossier_medical_id")
+
+  if (!patientId) {
+    throw new Error("Connexion requise pour envoyer le questionnaire.")
+  }
+
+  if (!dossierMedicalId) {
+    throw new Error("Dossier médical introuvable. Rechargez la page pour le récupérer depuis le serveur.")
+  }
+
+  console.log("Patient Identifiers:", { patientId, dossierMedicalId })
+  // log terminal npm
+  console.log(`Patient Identifiers: patientId=${patientId}, dossierMedicalId=${dossierMedicalId}`)
+  return { patientId, dossierMedicalId }
+}
+
+async function preloadDossierId() {
+  const patientId = localStorage.getItem("user_id")
+  if (!patientId) return
+
+  try {
+    const response = await fetch(`/api/patients/${patientId}/dossier-id`)
+    const result = await response.json()
+
+    if (!response.ok || !result.success || !result.dossier_id) {
+      console.warn("Impossible de précharger l'id du dossier médical:", result.error || response.statusText)
+      return
+    }
+
+    localStorage.setItem("dossier_medical_id", result.dossier_id)
+  } catch (err) {
+    console.error("Erreur lors du préchargement de l'id du dossier médical:", err)
+  }
 }
 
 function renderScaleButtons() {
@@ -482,9 +600,7 @@ function updateScaleDisplay(id, value) {
 }
 
 function updateNormalValues() {
-  if (!formData.sexe) return
-
-  const ranges = NORMAL_RANGES[formData.sexe]
+  const ranges = getReferenceRanges()
 
   const creatinineNormal = document.getElementById("creatinine-normal")
   if (creatinineNormal) {
@@ -500,7 +616,6 @@ function updateNormalValues() {
 function isFormValid() {
   return (
     formData.date_questionnaire &&
-    formData.sexe &&
     formData.poids &&
     formData.envie_uriner &&
     formData.frequence &&
@@ -530,7 +645,7 @@ function calculateDFG(creatinineMgL) {
   return Math.max(dfg, 5)
 }
 
-function analyzeResults() {
+function analyzeResults(saveStatus = null) {
   const dfg = calculateDFG(formData.creatinine)
   let stageLabel = ""
   let severity = "normal"
@@ -558,13 +673,17 @@ function analyzeResults() {
   const criticalAlerts = checkCriticalValues(dfg)
   const recommendations = generateRecommendations(dfg)
 
-  renderResults({
+  const results = {
     dfg,
     stageLabel,
     severity,
     criticalAlerts,
     recommendations,
-  })
+  }
+
+  lastAnalysisResults = results
+
+  renderResults(results, saveStatus)
 }
 
 function checkCriticalValues(dfg) {
@@ -587,6 +706,7 @@ function checkCriticalValues(dfg) {
 
 function generateRecommendations(dfg) {
   const recommendations = []
+  const ranges = getReferenceRanges()
 
   if (formData.envie_uriner >= 7) {
     recommendations.push("Envie d'uriner élevée: Peut indiquer une infection urinaire ou un problème de vessie.")
@@ -622,7 +742,7 @@ function generateRecommendations(dfg) {
     recommendations.push("Hypertension artérielle: Contrôle tensionnel strict recommandé pour protéger le greffon.")
   }
 
-  if (formData.creatinine > NORMAL_RANGES[formData.sexe].creatinine.max) {
+  if (formData.creatinine > ranges.creatinine.max) {
     recommendations.push("Créatinine élevée: Surveillance rapprochée de la fonction rénale nécessaire.")
   }
 
@@ -647,7 +767,12 @@ function generateRecommendations(dfg) {
   return recommendations
 }
 
-function renderResults(results) {
+function getReferenceRanges() {
+  // Valeurs de reference par defaut (profil neutre)
+  return NORMAL_RANGES.Homme
+}
+
+function renderResults(results, saveStatus = null) {
   const container = document.getElementById("form-container")
   const resultsContainer = document.getElementById("results-container")
 
@@ -669,6 +794,29 @@ function renderResults(results) {
         : "text-success"
 
   let html = ""
+
+  if (saveStatus) {
+    const statusClass = saveStatus.success ? "alert-success" : "alert-destructive"
+    const statusIconPath = saveStatus.success ? "M5 13l4 4L19 7" : "M6 18L18 6M6 6l12 12"
+    const statusMessage = saveStatus.success
+      ? "Reponses enregistrees dans la base de donnees."
+      : `Enregistrement impossible: ${saveStatus.message || "veuillez reessayer."}`
+
+    html += `
+        <div class="alert ${statusClass}" style="border-left: 4px solid;">
+            <div class="alert-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${statusIconPath}"></path>
+                </svg>
+                <span>${statusMessage}</span>
+            </div>
+            ${saveStatus.success
+        ? ""
+        : '<div class="alert-description" style="margin-top: 0.5rem;">Vos resultats sont affiches mais n\'ont pas pu etre sauvegardes.</div>'
+      }
+        </div>
+    `
+  }
 
   if (results.criticalAlerts.length > 0) {
     html += `
@@ -697,19 +845,26 @@ function renderResults(results) {
   html += `
         <div class="card border-2">
             <div class="card-header">
-                <div class="flex items-start justify-between">
                     <div>
                         <h2 class="card-title text-2xl mb-2">Résultats de l'Évaluation</h2>
                         <p class="card-description">
-                            Questionnaire du ${new Date(formData.date_questionnaire).toLocaleDateString("fr-FR")} - Patient: ${formData.sexe}
+                            Questionnaire du ${new Date(formData.date_questionnaire).toLocaleDateString("fr-FR")}
                         </p>
                     </div>
-                    <button type="button" class="button button-outline" onclick="resetForm()">
-                        <svg class="w-4 h-4" style="margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        Nouveau
-                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" class="button button-outline" onclick="copyToClipboard()">
+                            <svg class="w-4 h-4" style="margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                            </svg>
+                            Copier pour IA
+                        </button>
+                        <button type="button" class="button button-outline" onclick="resetForm()">
+                            <svg class="w-4 h-4" style="margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Nouveau
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="card-content">
@@ -742,8 +897,8 @@ function renderResults(results) {
             </div>
             <div class="card-content space-y-3">
                 ${results.recommendations
-                  .map(
-                    (rec) => `
+      .map(
+        (rec) => `
                     <div class="alert border-l-4 border-l-primary">
                         <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -751,8 +906,8 @@ function renderResults(results) {
                         <div class="alert-description" style="margin-left: 0.5rem;">${rec}</div>
                     </div>
                 `,
-                  )
-                  .join("")}
+      )
+      .join("")}
             </div>
         </div>
 
@@ -775,7 +930,6 @@ function renderResults(results) {
 function resetForm() {
   formData = {
     date_questionnaire: new Date().toISOString().split("T")[0],
-    sexe: "",
     poids: "",
     envie_uriner: "",
     frequence: "non",
@@ -803,4 +957,60 @@ function resetForm() {
   renderForm()
 }
 
-document.addEventListener("DOMContentLoaded", renderForm)
+document.addEventListener("DOMContentLoaded", async () => {
+  await preloadDossierId()
+  renderForm()
+})
+
+function copyToClipboard() {
+  if (!lastAnalysisResults) return
+
+  const textSummary = generateMedicalSummary(formData, lastAnalysisResults)
+
+  navigator.clipboard.writeText(textSummary).then(() => {
+    // Feedback visuel temporaire
+    const btn = document.querySelector('button[onclick="copyToClipboard()"]')
+    if (btn) {
+      const originalText = btn.innerHTML
+      btn.innerHTML = `
+        <svg class="w-4 h-4" style="margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Copié !
+      `
+      setTimeout(() => {
+        btn.innerHTML = originalText
+      }, 2000)
+    }
+  }).catch(err => {
+    console.error('Erreur lors de la copie :', err)
+    alert('Impossible de copier le texte automatiquement.')
+  })
+}
+
+function generateMedicalSummary(data, analysis) {
+  let summary = `Voici mes derniers résultats du ${new Date(data.date_questionnaire).toLocaleDateString("fr-FR")} :\n\n`
+
+  summary += `📋 CONSTANTES :\n`
+  if (data.poids) summary += `- Poids : ${data.poids} kg\n`
+  if (data.temperature) summary += `- Température : ${data.temperature}°C\n`
+  if (data.tension_systolique) summary += `- Tension : ${data.tension_systolique}/${data.tension_diastolique} mmHg\n`
+  if (data.frequence_cardiaque) summary += `- Fréquence cardiaque : ${data.frequence_cardiaque} bpm\n`
+
+  summary += `\n🔬 BIOLOGIE :\n`
+  if (data.creatinine) summary += `- Créatinine : ${data.creatinine} mg/L (DFG: ${analysis.dfg})\n`
+  if (data.hemoglobine) summary += `- Hémoglobine : ${data.hemoglobine} g/dL\n`
+  if (data.glycemie) summary += `- Glycémie : ${data.glycemie} g/L\n`
+  if (data.tacrolimus_ng) summary += `- Tacrolimus : ${data.tacrolimus_ng} ng/mL\n`
+
+  summary += `\n📊 ANALYSE AUTOMATIQUE :\n`
+  summary += `- Stade : ${analysis.stageLabel}\n`
+
+  if (analysis.criticalAlerts.length > 0) {
+    summary += `\n⚠️ ALERTES DÉTECTÉES :\n${analysis.criticalAlerts.map(a => '- ' + a).join('\n')}\n`
+  }
+
+  summary += `\nPouvez-vous analyser ces résultats et me donner des recommandations ?`
+
+  return summary
+}
