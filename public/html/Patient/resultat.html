@@ -7,6 +7,7 @@
     <title>Mes Résultats - Suivi Greffe Rénale</title>
     <link rel="stylesheet" href="../../style/patient.css">
     <script src="/js/sidebar.js" defer></script>
+    <script src="/js/patient-results.js" defer></script>
 </head>
 
 <body>
@@ -21,126 +22,25 @@
             </header>
 
             <div class="content">
-                <div class="alert-banner">
-                    <span class="alert-icon">🔴</span>
-                    <div class="alert-text">
-                        <h3>Attention : Créatinine élevée</h3>
-                        <p>Votre dernier taux de créatinine (245 mg/L) est au-dessus de la normale. Votre médecin a été
-                            informé.</p>
-                    </div>
-                </div>
+                <div class="alert-banner" id="results-alert" style="display:none;"></div>
 
                 <div class="card">
                     <div class="card-header">
-                        <h2>Dernier Bilan - 12 Octobre 2025</h2>
+                        <h2 id="last-result-title">Dernier bilan</h2>
                     </div>
 
-                    <div class="results-grid">
-                        <div class="result-card danger">
+                    <div id="results-grid" class="results-grid">
+                        <div class="result-card">
                             <div class="result-header">
                                 <div class="result-title">
-                                    <h3>Créatinine</h3>
-                                    <p>Fonction rénale</p>
+                                    <h3>Chargement...</h3>
+                                    <p>Merci de patienter</p>
                                 </div>
-                                <span class="result-status status-danger">Élevé</span>
+                                <span class="result-status">—</span>
                             </div>
                             <div class="result-value">
-                                <span class="value-number">245</span>
-                                <span class="value-unit">mg/L</span>
-                            </div>
-                            <div class="result-range">
-                                <div class="range-label">Normale :</div>
-                                <div class="range-value">80 - 120 mg/L</div>
-                            </div>
-                        </div>
-
-                        <div class="result-card success">
-                            <div class="result-header">
-                                <div class="result-title">
-                                    <h3>Tacrolimus</h3>
-                                    <p>Taux sanguin</p>
-                                </div>
-                                <span class="result-status status-success">Normal</span>
-                            </div>
-                            <div class="result-value">
-                                <span class="value-number">8.2</span>
-                                <span class="value-unit">ng/mL</span>
-                            </div>
-                            <div class="result-range">
-                                <div class="range-label">Cible :</div>
-                                <div class="range-value">6 - 10 ng/mL</div>
-                            </div>
-                        </div>
-
-                        <div class="result-card success">
-                            <div class="result-header">
-                                <div class="result-title">
-                                    <h3>Globules blancs</h3>
-                                    <p>Immunité</p>
-                                </div>
-                                <span class="result-status status-success">Normal</span>
-                            </div>
-                            <div class="result-value">
-                                <span class="value-number">6.8</span>
-                                <span class="value-unit">G/L</span>
-                            </div>
-                            <div class="result-range">
-                                <div class="range-label">Normale :</div>
-                                <div class="range-value">4 - 10 G/L</div>
-                            </div>
-                        </div>
-
-                        <div class="result-card warning">
-                            <div class="result-header">
-                                <div class="result-title">
-                                    <h3>Potassium</h3>
-                                    <p>Électrolytes</p>
-                                </div>
-                                <span class="result-status status-warning">Limite</span>
-                            </div>
-                            <div class="result-value">
-                                <span class="value-number">5.2</span>
-                                <span class="value-unit">mmol/L</span>
-                            </div>
-                            <div class="result-range">
-                                <div class="range-label">Normale :</div>
-                                <div class="range-value">3.5 - 5.0 mmol/L</div>
-                            </div>
-                        </div>
-
-                        <div class="result-card success">
-                            <div class="result-header">
-                                <div class="result-title">
-                                    <h3>Hémoglobine</h3>
-                                    <p>Anémie</p>
-                                </div>
-                                <span class="result-status status-success">Normal</span>
-                            </div>
-                            <div class="result-value">
-                                <span class="value-number">13.5</span>
-                                <span class="value-unit">g/dL</span>
-                            </div>
-                            <div class="result-range">
-                                <div class="range-label">Normale :</div>
-                                <div class="range-value">12 - 16 g/dL</div>
-                            </div>
-                        </div>
-
-                        <div class="result-card success">
-                            <div class="result-header">
-                                <div class="result-title">
-                                    <h3>Plaquettes</h3>
-                                    <p>Coagulation</p>
-                                </div>
-                                <span class="result-status status-success">Normal</span>
-                            </div>
-                            <div class="result-value">
-                                <span class="value-number">225</span>
-                                <span class="value-unit">G/L</span>
-                            </div>
-                            <div class="result-range">
-                                <div class="range-label">Normale :</div>
-                                <div class="range-value">150 - 400 G/L</div>
+                                <span class="value-number">—</span>
+                                <span class="value-unit"></span>
                             </div>
                         </div>
                     </div>
@@ -148,10 +48,10 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <h2>Évolution de la Créatinine</h2>
+                        <h2>Évolution récente</h2>
                     </div>
-                    <div class="chart-placeholder">
-                        📈 Graphique d'évolution de la créatinine (6 derniers mois)
+                    <div class="chart-placeholder" id="results-chart-placeholder">
+                        📈 Graphique d'évolution à venir
                     </div>
                 </div>
 
@@ -160,40 +60,13 @@
                         <h2>Historique des Bilans</h2>
                     </div>
 
-                    <div class="timeline">
+                    <div class="timeline" id="results-timeline">
                         <div class="timeline-item">
                             <div class="timeline-dot"></div>
-                            <div class="timeline-date">12 Octobre 2025</div>
+                            <div class="timeline-date">Chargement...</div>
                             <div class="timeline-content">
-                                <h4>Bilan sanguin complet</h4>
-                                <p>Créatinine élevée détectée. Fonction rénale à surveiller.</p>
-                            </div>
-                        </div>
-
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-date">28 Septembre 2025</div>
-                            <div class="timeline-content">
-                                <h4>Bilan de routine</h4>
-                                <p>Tous les résultats dans les normes. Bon suivi du traitement.</p>
-                            </div>
-                        </div>
-
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-date">15 Septembre 2025</div>
-                            <div class="timeline-content">
-                                <h4>Dosage immunosuppresseurs</h4>
-                                <p>Taux de tacrolimus optimal. Pas d'ajustement nécessaire.</p>
-                            </div>
-                        </div>
-
-                        <div class="timeline-item">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-date">1 Septembre 2025</div>
-                            <div class="timeline-content">
-                                <h4>Bilan post-greffe M6</h4>
-                                <p>Excellente fonction du greffon. Suivi standard maintenu.</p>
+                                <h4>En attente</h4>
+                                <p>Récupération des dernières analyses</p>
                             </div>
                         </div>
                     </div>
