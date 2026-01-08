@@ -159,6 +159,78 @@ router.get('/patients', authenticateMedecin, async (req, res) => {
     }
 });
 
+// Dernières réponses (constantes) pour un patient affecté au médecin connecté
+router.get('/patients/:patientId/reponses', authenticateMedecin, async (req, res) => {
+    try {
+        const patientId = Number(req.params.patientId);
+        if (!patientId || Number.isNaN(patientId)) {
+            return res.status(400).json({ success: false, message: 'ID patient invalide' });
+        }
+
+        // Vérifier que le patient est bien affecté à ce médecin et récupérer le dossier
+        const dossier = await sql`
+            SELECT d.id
+            FROM dossier_medical d
+            JOIN utilisateur u ON u.id = d.id_utilisateur
+            WHERE u.id = ${patientId} AND u.id_utilisateur_medecin = ${req.userId}
+            LIMIT 1
+        `;
+
+        if (!dossier.length) {
+            return res.status(404).json({ success: false, message: 'Dossier introuvable pour ce médecin' });
+        }
+
+        // Récupérer les deux dernières réponses (J et J-1)
+        const responses = await sql`
+            SELECT id, date, poids, creatinine, tension_systolique, tension_diastolique, temperature
+            FROM reponse
+            WHERE id_dossier_medical = ${dossier[0].id}
+            ORDER BY date DESC, id DESC
+            LIMIT 2
+        `;
+
+        return res.json({ success: true, responses });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des réponses patient:', error);
+        res.status(500).json({ success: false, message: 'Erreur serveur' });
+    }
+});
+
+// Dernières prescriptions / traitements (table suivi_patient) pour un patient affecté au médecin connecté
+router.get('/patients/:patientId/traitements', authenticateMedecin, async (req, res) => {
+    try {
+        const patientId = Number(req.params.patientId);
+        if (!patientId || Number.isNaN(patientId)) {
+            return res.status(400).json({ success: false, message: 'ID patient invalide' });
+        }
+
+        const dossier = await sql`
+            SELECT d.id
+            FROM dossier_medical d
+            JOIN utilisateur u ON u.id = d.id_utilisateur
+            WHERE u.id = ${patientId} AND u.id_utilisateur_medecin = ${req.userId}
+            LIMIT 1
+        `;
+
+        if (!dossier.length) {
+            return res.status(404).json({ success: false, message: 'Dossier introuvable pour ce médecin' });
+        }
+
+        const traitements = await sql`
+            SELECT id, date, prescription
+            FROM suivi_patient
+            WHERE id_dossier_medical = ${dossier[0].id}
+            ORDER BY date DESC, id DESC
+            LIMIT 5
+        `;
+
+        return res.json({ success: true, traitements });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des traitements patient:', error);
+        res.status(500).json({ success: false, message: 'Erreur serveur' });
+    }
+});
+
 // GET stats, patients
 router.get('/:id/stats', (req, res) => res.json({ success: true, stats: {} }));
 router.get('/:id/patients', (req, res) => res.json({ success: true, patients: [] }));

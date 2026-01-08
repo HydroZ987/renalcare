@@ -381,6 +381,7 @@ function renderPatientLists() {
   renderAllPatientsList();
   renderManagePatientsList();
   renderPatientSelectOptions();
+  updateActionFormSelects();
 }
 
 function filterPatientsByTerm(list, term) {
@@ -422,13 +423,13 @@ function renderPatientSelectOptions() {
   listContainer.innerHTML = filtered.map((patient) => {
     const contact = [patient.email, patient.telephone].filter(Boolean).join(' • ');
     return `
-      <div class="patient-item" style="cursor:pointer;" data-patient-id="${patient.id}">
+      <div class="patient-item" style="cursor:pointer;" data-patient-id="${patient.id}" data-patient-name="${patient.prenom} ${patient.nom}">
         <div class="patient-avatar">${getInitials(patient.prenom, patient.nom)}</div>
         <div class="patient-info">
           <h4>${patient.prenom} ${patient.nom}</h4>
           <p>${contact || 'Contact non renseigné'}</p>
         </div>
-        <button class="btn-primary" data-action="select-patient" data-patient-id="${patient.id}">Sélectionner</button>
+        <button class="btn-primary" data-action="select-patient" data-patient-id="${patient.id}" data-patient-name="${patient.prenom} ${patient.nom}">Sélectionner</button>
       </div>
     `;
   }).join('');
@@ -457,15 +458,16 @@ function renderPatientSelectOptions() {
       const btn = e.target.closest('[data-action="select-patient"]');
       const item = e.target.closest('[data-patient-id]');
       const patientId = btn?.dataset.patientId || item?.dataset.patientId;
+      const patientName = btn?.dataset.patientName || item?.dataset.patientName;
       if (patientId) {
-        loadPatientDataById(patientId);
+        loadPatientDataById(patientId, patientName);
       }
     });
   }
 }
 
 // Chargement des données suivi par ID direct (depuis la liste)
-function loadPatientDataById(patientId) {
+function loadPatientDataById(patientId, patientLabel) {
   const select = document.getElementById('patientSelectHidden');
   if (select) {
     const existingOption = Array.from(select.options).find((opt) => opt.value === String(patientId));
@@ -475,7 +477,7 @@ function loadPatientDataById(patientId) {
       // inject a hidden option to keep loadPatientData compatible
       const opt = document.createElement('option');
       opt.value = patientId;
-      opt.textContent = 'Patient';
+      opt.textContent = patientLabel || 'Patient';
       opt.hidden = true;
       select.appendChild(opt);
       select.value = patientId;
@@ -527,18 +529,136 @@ function renderManagePatientsList() {
   manageList.innerHTML = filtered.map(patient => {
     const initials = getInitials(patient.prenom, patient.nom);
     const contact = [patient.email, patient.telephone].filter(Boolean).join(' • ');
+    const label = `${patient.prenom} ${patient.nom}`.trim();
     
     return `
       <div class="patient-item">
         <div class="patient-avatar">${initials}</div>
         <div class="patient-info">
-          <h4>${patient.prenom} ${patient.nom}</h4>
+          <h4>${label}</h4>
           <p>${contact || 'Contact non renseigné'}</p>
         </div>
-        <button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="editPatient('${patient.prenom} ${patient.nom}')">✏️ Modifier</button>
+        <div class="action-buttons" style="gap:6px; flex-wrap:wrap;">
+          <button class="btn-primary" style="padding:6px 10px;" onclick="goToSuiviPatient('${patient.id}', '${label}')">📊 Suivre</button>
+          <button class="btn-primary" style="padding:6px 10px;" onclick="goToRdvPatient('${patient.id}', '${label}')">📅 RDV</button>
+          <button class="btn-primary" style="padding:6px 10px;" onclick="goToOrdonnancePatient('${patient.id}', '${label}')">💊 Ordonnance</button>
+          <button class="btn-primary" style="padding:6px 10px;" onclick="goToMessageriePatient('${patient.id}', '${label}')">💬 Messagerie</button>
+        </div>
       </div>
     `;
   }).join('');
+}
+
+function updateActionFormSelects(selectedId, selectedLabel) {
+  populateSelectWithAssigned('rdvPatient', selectedId, selectedLabel);
+  populateSelectWithAssigned('ordoPatient', selectedId, selectedLabel);
+}
+
+function populateSelectWithAssigned(selectId, selectedId, selectedLabel) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+
+  const hasExplicitSelection = selectedId !== undefined && selectedId !== null;
+  const currentValue = hasExplicitSelection ? String(selectedId) : select.value;
+  const currentLabel = selectedLabel || select.options[select.selectedIndex]?.textContent || '';
+
+  select.innerHTML = '';
+
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = 'Sélectionnez un patient...';
+  placeholder.selected = !currentValue;
+  select.appendChild(placeholder);
+
+  assignedPatients.forEach((patient) => {
+    const opt = document.createElement('option');
+    opt.value = patient.id;
+    opt.textContent = `${patient.prenom} ${patient.nom}`.trim();
+    select.appendChild(opt);
+  });
+
+  if (currentValue) {
+    select.value = currentValue;
+    if (!select.value) {
+      const opt = document.createElement('option');
+      opt.value = currentValue;
+      opt.textContent = currentLabel || 'Patient';
+      opt.hidden = true;
+      select.appendChild(opt);
+      select.value = currentValue;
+    }
+  }
+}
+
+function setSelectedPatientContext(patientId, patientLabel) {
+  if (patientId !== undefined && patientId !== null) {
+    localStorage.setItem('medecin_selected_patient_id', String(patientId));
+  }
+  if (patientLabel) {
+    localStorage.setItem('medecin_selected_patient_name', patientLabel);
+  }
+}
+
+function getInitialsFromLabel(label) {
+  const parts = (label || '').trim().split(/\s+/);
+  const prenom = parts.shift() || '';
+  const nom = parts.join(' ');
+  const initials = getInitials(prenom, nom);
+  return initials || (label ? label.charAt(0).toUpperCase() : '?');
+}
+
+function goToSuiviPatient(patientId, patientLabel) {
+  setSelectedPatientContext(patientId, patientLabel);
+  if (typeof navigateTo === 'function') {
+    navigateTo('suivi');
+  }
+  loadPatientDataById(patientId, patientLabel);
+}
+
+function goToRdvPatient(patientId, patientLabel) {
+  setSelectedPatientContext(patientId, patientLabel);
+  updateActionFormSelects(patientId, patientLabel);
+  if (typeof navigateTo === 'function') {
+    navigateTo('rdv');
+  }
+  if (typeof openAddRdvModal === 'function') {
+    openAddRdvModal();
+  }
+  const select = document.getElementById('rdvPatient');
+  if (select) {
+    select.focus();
+  }
+}
+
+function goToOrdonnancePatient(patientId, patientLabel) {
+  setSelectedPatientContext(patientId, patientLabel);
+  updateActionFormSelects(patientId, patientLabel);
+  if (typeof navigateTo === 'function') {
+    navigateTo('ordonnances');
+  }
+  if (typeof openCreateOrdonnanceModal === 'function') {
+    openCreateOrdonnanceModal();
+  }
+  const select = document.getElementById('ordoPatient');
+  if (select) {
+    select.focus();
+  }
+}
+
+function goToMessageriePatient(patientId, patientLabel) {
+  setSelectedPatientContext(patientId, patientLabel);
+  if (typeof navigateTo === 'function') {
+    navigateTo('messagerie');
+  }
+  const initials = getInitialsFromLabel(patientLabel);
+  if (typeof openChat === 'function') {
+    openChat(patientLabel, initials);
+  } else {
+    const nameEl = document.getElementById('chatPatientName');
+    const avatarEl = document.getElementById('chatAvatarHeader');
+    if (nameEl) nameEl.textContent = patientLabel;
+    if (avatarEl) avatarEl.textContent = initials;
+  }
 }
 
 // Fonction pour mettre à jour le compteur de patients
