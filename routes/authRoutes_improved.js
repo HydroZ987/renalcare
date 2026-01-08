@@ -350,7 +350,6 @@ router.post('/medecin/register', async (req, res) => {
           phone,
           adresse,
           numero_licence,
-          created_at: new Date().toISOString(),
         },
         { onConflict: 'auth_id' }
       );
