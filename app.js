@@ -49,8 +49,6 @@ const htmlRoutes = [
     file: 'mot-de-passe-oublie.html',
   },
   { paths: ['/patient/treatment'], file: 'Patient/treatment.html' },
-  { paths: ['/patient/document'], file: 'Patient/document.html' },
-  { paths: ['/patient/messagerie'], file: 'Patient/messagerie.html' },
   { paths: ['/patient/questionnaire'], file: 'Patient/questionnaire.html' },
   { paths: ['/patient/rendez-vous'], file: 'Patient/rendez-vous.html' },
   { paths: ['/patient/resultat'], file: 'Patient/resultat.html' },

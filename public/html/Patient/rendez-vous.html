@@ -7,6 +7,7 @@
     <title>Mes Rendez-vous - Suivi Greffe Rénale</title>
     <link rel="stylesheet" href="../../style/patient.css">
     <script src="/js/sidebar.js" defer></script>
+    <script src="/js/patient-appointments.js" defer></script>
 </head>
 
 <body>
@@ -27,150 +28,10 @@
             <div class="content">
                 <div class="card">
                     <div class="card-header">
-                        <h2>Novembre 2025</h2>
-                    </div>
-                    <div class="calendar-view">
-                        <div class="calendar-day">
-                            <div class="day-number">1</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">2</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">3</div>
-                        </div>
-                        <div class="calendar-day today">
-                            <div class="day-number">4</div>
-                        </div>
-                        <div class="calendar-day has-appointment">
-                            <div class="day-number">5</div>
-                            <div class="day-indicator"></div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">6</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">7</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">8</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">9</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">10</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">11</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">12</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">13</div>
-                        </div>
-                        <div class="calendar-day">
-                            <div class="day-number">14</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
                         <h2>Rendez-vous à Venir</h2>
                     </div>
-
-                    <div class="appointment-list">
-                        <div class="appointment-card">
-                            <div class="appointment-date">
-                                <div class="date-month">Nov</div>
-                                <div class="date-day">5</div>
-                                <div class="date-time">09:00</div>
-                            </div>
-                            <div class="appointment-details">
-                                <h3>Laboratoire d'Analyses</h3>
-                                <div class="appointment-type">Bilan sanguin de contrôle</div>
-                                <div class="appointment-info">
-                                    <div class="info-item">
-                                        <span>📍</span>
-                                        <span>Centre Hospitalier - Bâtiment B</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span>⏱️</span>
-                                        <span>30 minutes</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span>⚠️</span>
-                                        <span>À jeun requis</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="appointment-actions">
-                                <button class="btn-action">Modifier</button>
-                                <button class="btn-cancel">Annuler</button>
-                            </div>
-                        </div>
-
-                        <div class="appointment-card">
-                            <div class="appointment-date">
-                                <div class="date-month">Nov</div>
-                                <div class="date-day">15</div>
-                                <div class="date-time">14:30</div>
-                            </div>
-                            <div class="appointment-details">
-                                <h3>Dr. Jean Dubois</h3>
-                                <div class="appointment-type">Consultation de suivi post-greffe</div>
-                                <div class="appointment-info">
-                                    <div class="info-item">
-                                        <span>📍</span>
-                                        <span>Service Néphrologie - Bureau 204</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span>⏱️</span>
-                                        <span>45 minutes</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span>📋</span>
-                                        <span>Résultats à apporter</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="appointment-actions">
-                                <button class="btn-action">Modifier</button>
-                                <button class="btn-cancel">Annuler</button>
-                            </div>
-                        </div>
-
-                        <div class="appointment-card">
-                            <div class="appointment-date">
-                                <div class="date-month">Déc</div>
-                                <div class="date-day">3</div>
-                                <div class="date-time">10:00</div>
-                            </div>
-                            <div class="appointment-details">
-                                <h3>Échographie rénale</h3>
-                                <div class="appointment-type">Imagerie médicale - Contrôle du greffon</div>
-                                <div class="appointment-info">
-                                    <div class="info-item">
-                                        <span>📍</span>
-                                        <span>Service Radiologie - Niveau -1</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span>⏱️</span>
-                                        <span>20 minutes</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span>💧</span>
-                                        <span>Vessie pleine</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="appointment-actions">
-                                <button class="btn-action">Modifier</button>
-                                <button class="btn-cancel">Annuler</button>
-                            </div>
-                        </div>
+                    <div class="appointment-list" id="upcomingAppointments">
+                        <p style="text-align: center; color: #666; padding: 40px;">Chargement des rendez-vous...</p>
                     </div>
                 </div>
 
@@ -178,49 +39,8 @@
                     <div class="card-header">
                         <h2>Rendez-vous Passés</h2>
                     </div>
-
-                    <div class="appointment-list">
-                        <div class="appointment-card">
-                            <div class="appointment-date">
-                                <div class="date-month">Oct</div>
-                                <div class="date-day">22</div>
-                                <div class="date-time">14:30</div>
-                            </div>
-                            <div class="appointment-details">
-                                <h3>Dr. Jean Dubois</h3>
-                                <div class="appointment-type">Consultation de suivi post-greffe</div>
-                                <div class="appointment-info">
-                                    <div class="info-item">
-                                        <span>✓</span>
-                                        <span>Rendez-vous effectué</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="appointment-actions">
-                                <button class="btn-action">Voir le compte-rendu</button>
-                            </div>
-                        </div>
-
-                        <div class="appointment-card">
-                            <div class="appointment-date">
-                                <div class="date-month">Oct</div>
-                                <div class="date-day">12</div>
-                                <div class="date-time">08:30</div>
-                            </div>
-                            <div class="appointment-details">
-                                <h3>Laboratoire d'Analyses</h3>
-                                <div class="appointment-type">Bilan sanguin complet</div>
-                                <div class="appointment-info">
-                                    <div class="info-item">
-                                        <span>✓</span>
-                                        <span>Résultats disponibles</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="appointment-actions">
-                                <button class="btn-action">Voir les résultats</button>
-                            </div>
-                        </div>
+                    <div class="appointment-list" id="pastAppointments">
+                        <p style="text-align: center; color: #666; padding: 40px;">Chargement des rendez-vous...</p>
                     </div>
                 </div>
             </div>
