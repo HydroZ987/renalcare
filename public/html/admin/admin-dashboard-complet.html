@@ -27,7 +27,7 @@
                 <div class="header-right">
                     <div class="notification-icon" onclick="navigateTo('notifications')">
                         🔔
-                        <span class="notification-badge">8</span>
+                        <span class="notification-badge" id="notif-badge">0</span>
                     </div>
                     <div class="user-profile">
                         <div class="user-avatar">AD</div>
@@ -75,7 +75,7 @@
                         </div>
                         <div class="stat-card yellow">
                             <div class="stat-info">
-                                <h3>12</h3>
+                                <h3 id="stat-notifications">—</h3>
                                 <p>Notifications</p>
                             </div>
                             <div class="stat-icon">🔔</div>
@@ -115,9 +115,6 @@
                                 <button class="btn-primary" style="width: 100%; margin-bottom: 10px;"
                                     onclick="navigateTo('users')">
                                     👥 Gérer les utilisateurs
-                                </button>
-                                <button class="btn-primary" style="width: 100%;" onclick="navigateTo('stats')">
-                                    📈 Voir les statistiques
                                 </button>
                             </div>
                         </div>
@@ -191,7 +188,7 @@
                 </div>
 
 
-                <!-- PAGE 4: STATISTIQUES -->
+                <!-- PAGE 4: STATISTIQUES 
                 <div id="page-stats" class="page">
                     <div class="stats-grid">
                         <div class="stat-card purple">
@@ -248,9 +245,9 @@
                             📊 Statistiques d'utilisation quotidienne
                         </div>
                     </div>
-                </div>
+                </div>-->
 
-                <!-- PAGE 5: QUESTIONNAIRES -->
+                <!-- PAGE 5: QUESTIONNAIRES 
                 <div id="page-questionnaires" class="page">
                     <div class="card">
                         <div class="card-header">
@@ -301,7 +298,7 @@
                             </table>
                         </div>
                     </div>
-                </div>
+                </div>-->
 
                 <!-- PAGE 6: SUPPORT / SAV -->
                 <div id="page-support" class="page">
@@ -355,43 +352,24 @@
                     <div class="card">
                         <div class="card-header">
                             <h2>Logs Système</h2>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <button class="btn-primary" onclick="loadLogs()">🔄 Rafraîchir</button>
+                                <a class="btn-secondary" href="/api/admin/logs/download" style="text-decoration:none;">⬇️ Exporter</a>
+                            </div>
                         </div>
 
                         <div class="tabs">
                             <button class="tab active">Tous</button>
-                            <button class="tab">Info</button>
-                            <button class="tab">Warning</button>
-                            <button class="tab">Erreurs</button>
                         </div>
 
-                        <div class="log-item">
-                            <span class="log-time">[2025-10-15 14:23:45]</span>
-                            <span class="log-level info">INFO</span>
-                            <span>Connexion réussie - Admin Principal (IP: 192.168.1.100)</span>
-                        </div>
+                        <div id="logs-meta" style="padding: 8px 0; color: #6c757d; font-size: 13px;">Affichage des logs...</div>
 
-                        <div class="log-item">
-                            <span class="log-time">[2025-10-15 14:20:12]</span>
-                            <span class="log-level info">INFO</span>
-                            <span>Validation compte patient - Marie Lefebvre</span>
-                        </div>
-
-                        <div class="log-item">
-                            <span class="log-time">[2025-10-15 14:15:33]</span>
-                            <span class="log-level warning">WARNING</span>
-                            <span>Tentative connexion échouée - patient@example.com</span>
-                        </div>
-
-                        <div class="log-item">
-                            <span class="log-time">[2025-10-15 13:45:22]</span>
-                            <span class="log-level error">ERROR</span>
-                            <span>Erreur base de données - Timeout connexion MySQL</span>
-                        </div>
-
-                        <div class="log-item">
-                            <span class="log-time">[2025-10-15 13:30:15]</span>
-                            <span class="log-level info">INFO</span>
-                            <span>Sauvegarde automatique effectuée - 1.2 GB</span>
+                        <div id="logs-list">
+                            <div class="log-item">
+                                <span class="log-time">Chargement...</span>
+                                <span class="log-level info">INFO</span>
+                                <span>Lecture des logs</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -404,39 +382,14 @@
                             <button class="btn-primary">Marquer toutes comme lues</button>
                         </div>
 
-                        <div class="notification-item unread">
-                            <div class="activity-icon">⏳</div>
-                            <div class="activity-content">
-                                <div class="activity-title">8 nouveaux comptes en attente</div>
-                                <div class="activity-details">Des utilisateurs attendent votre validation</div>
-                                <div class="activity-time">Il y a 30 minutes</div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item unread">
-                            <div class="activity-icon">🎧</div>
-                            <div class="activity-content">
-                                <div class="activity-title">3 tickets support urgents</div>
-                                <div class="activity-details">Des problèmes nécessitent votre attention immédiate</div>
-                                <div class="activity-time">Il y a 1 heure</div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item">
-                            <div class="activity-icon">📊</div>
-                            <div class="activity-content">
-                                <div class="activity-title">Rapport hebdomadaire disponible</div>
-                                <div class="activity-details">Le rapport d'activité de la semaine est prêt</div>
-                                <div class="activity-time">Il y a 3 heures</div>
-                            </div>
-                        </div>
-
-                        <div class="notification-item">
-                            <div class="activity-icon">🔔</div>
-                            <div class="activity-content">
-                                <div class="activity-title">Mise à jour système disponible</div>
-                                <div class="activity-details">Version 2.1.5 prête à être installée</div>
-                                <div class="activity-time">Hier 16h30</div>
+                        <div id="notifications-list">
+                            <div class="notification-item">
+                                <div class="activity-icon">⏳</div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Chargement...</div>
+                                    <div class="activity-details">Récupération des alertes</div>
+                                    <div class="activity-time">...</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -642,7 +595,6 @@
             'overview': ['Tableau de bord Administrateur', 'Gestion de la plateforme de suivi post-greffe'],
             'users': ['Gestion des Utilisateurs', 'Gérer tous les comptes patients et médecins'],
             'pending': ['Comptes en Attente', 'Valider les nouvelles demandes d\'inscription'],
-            'stats': ['Statistiques', 'Analyses et métriques de la plateforme'],
             'questionnaires': ['Gestion des Questionnaires', 'Créer et gérer les formulaires de suivi'],
             'support': ['Support / SAV', 'Gérer les tickets et demandes d\'assistance'],
             'logs': ['Logs Système', 'Historique des événements système'],
@@ -658,6 +610,9 @@
 
         if (page === 'pending') {
             loadPendingRequests();
+        }
+        if (page === 'logs' && typeof loadLogs === 'function') {
+            loadLogs();
         }
     }
 

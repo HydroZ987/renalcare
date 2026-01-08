@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../db');
 const bcrypt = require('bcrypt');
+const fs = require('fs');
+const path = require('path');
 
 const pendingRequestsStore = require('../services/pendingRequestsStore');
 const {
@@ -129,6 +131,72 @@ router.post('/refuse-account', async (req, res) => {
     return res
       .status(500)
       .json({ success: false, error: 'Erreur lors du refus.' });
+  }
+});
+
+// Lecture des logs applicatifs (console/app.log)
+router.get('/logs', async (req, res) => {
+  try {
+    const logPath = process.env.APP_LOG_PATH || path.join(__dirname, '..', 'app.log');
+    if (!fs.existsSync(logPath)) {
+      return res.json({ success: true, logs: [] });
+    }
+
+    const raw = await fs.promises.readFile(logPath, 'utf8');
+    const maxLines = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 10), 1000);
+    const maxLen = 500;
+
+    const lines = raw.split(/\r?\n/).filter(Boolean);
+    const tail = lines
+      .slice(-maxLines)
+      .map((line, idx) => {
+        const truncated = line.length > maxLen ? `${line.slice(0, maxLen)}…` : line;
+        return { id: idx, line: truncated };
+      });
+
+    res.json({ success: true, logs: tail, total: lines.length, returned: tail.length });
+  } catch (err) {
+    console.error('Erreur lecture logs:', err);
+    res.status(500).json({ success: false, error: 'Impossible de lire les logs.' });
+  }
+});
+
+// Notifications / alertes administrateur (données issues des demandes en attente)
+router.get('/notifications', (req, res) => {
+  try {
+    const pending = pendingRequestsStore.getAll() || [];
+    const items = pending.slice(-5).reverse().map((p, idx) => ({
+      id: p.id || idx,
+      title: 'Nouvelle demande en attente',
+      detail: `${p.type === 'medecin' ? 'Médecin' : 'Patient'}: ${p.prenom} ${p.nom}`,
+      time: p.createdAt || 'Récemment',
+      icon: '⏳',
+      unread: true,
+    }));
+
+    res.json({
+      success: true,
+      notifications: items,
+      unread: items.length,
+    });
+  } catch (err) {
+    console.error('Erreur notifications admin:', err);
+    res.status(500).json({ success: false, error: 'Impossible de charger les notifications.' });
+  }
+});
+
+// Télécharger le fichier brut de logs
+router.get('/logs/download', async (_req, res) => {
+  try {
+    const logPath = process.env.APP_LOG_PATH || path.join(__dirname, '..', 'app.log');
+    if (!fs.existsSync(logPath)) {
+      return res.status(404).json({ success: false, error: 'Fichier de logs introuvable.' });
+    }
+
+    res.download(logPath, 'app.log');
+  } catch (err) {
+    console.error('Erreur téléchargement logs:', err);
+    res.status(500).json({ success: false, error: 'Impossible de télécharger les logs.' });
   }
 });
 
@@ -293,6 +361,7 @@ router.get('/stats', async (req, res) => {
         patients: totalPatients,
         medecins: totalMedecins,
         pending: pendingCount,
+        notifications: pendingCount,
         recentActivity: recentPending
       }
     });
