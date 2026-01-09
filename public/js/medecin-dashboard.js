@@ -923,51 +923,9 @@ function selectOrdoPatient(patientId, patientName) {
   selectedOrdoPatientId = patientId;
   document.getElementById('ordoPatientSearch').value = patientName;
   document.getElementById('ordoPatientList').innerHTML = '';
-  loadOrdonnancesForPatient(patientId);
-}
-
-async function loadOrdonnancesForPatient(patientId) {
-  try {
-    const response = await fetch(`/api/medecin/ordonnances/${patientId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) throw new Error('Erreur lors du chargement des ordonnances');
-
-    const data = await response.json();
-    displayOrdonnances(data.ordonnances || []);
-  } catch (error) {
-    console.error('Erreur:', error);
-    document.getElementById('ordonnancesList').innerHTML = '<p style="color: #c33;">Erreur lors du chargement des ordonnances</p>';
-  }
-}
-
-function displayOrdonnances(ordonnances) {
-  const container = document.getElementById('ordonnancesList');
   
-  if (!ordonnances || ordonnances.length === 0) {
-    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Aucune ordonnance pour ce patient</p>';
-    return;
+  // Appeler la fonction loadOrdonnances qui est définie dans le HTML
+  if (typeof loadOrdonnances === 'function') {
+    loadOrdonnances(patientId);
   }
-
-  container.innerHTML = ordonnances.map(ordo => `
-    <div class="card" style="margin-bottom: 15px; padding: 15px; border-left: 4px solid #8e44ad;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <h4 style="margin: 0 0 5px 0;">${ordo.titre || 'Ordonnance'}</h4>
-          <p style="margin: 0; font-size: 13px; color: #666;">Date: ${new Date(ordo.date_creation).toLocaleDateString('fr-FR')}</p>
-        </div>
-        <button class="btn-secondary" onclick="viewOrdonnance('${ordo.id}')">Voir</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function viewOrdonnance(ordoId) {
-  console.log('Afficher ordonnance:', ordoId);
-  // À implémenter: modal ou navigation pour voir les détails
 }
