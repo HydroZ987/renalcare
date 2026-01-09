@@ -480,39 +480,41 @@ router.post('/patients/:id/traitements', (req, res) => {
     res.json({ success: true, message: `Traitement ajouté pour patient ${req.params.id}` });
 });
 
-// Alertes critiques: basé sur les derniers questionnaires des patients du médecin
+// Alertes critiques: une alerte (dernier questionnaire) par patient du médecin
 router.get('/alerts', authenticateMedecin, async (req, res) => {
     try {
         const rows = await sql`
-            SELECT 
-                r.id,
-                r.date,
-                r.poids,
-                r.creatinine,
-                r.tension_systolique,
-                r.tension_diastolique,
-                r.temperature,
-                r.glycemie,
-                r.hemoglobine,
-                r.douleur_greffon,
-                r.frequence_cardiaque,
-                r.tacrolimus_ng,
-                r.everolimus_ng,
-                u.id AS patient_id,
-                u.prenom,
-                u.nom
-            FROM utilisateur u
-            JOIN dossier_medical d ON d.id_utilisateur = u.id
-            JOIN reponse r ON r.id_dossier_medical = d.id
-            WHERE u.id_utilisateur_medecin = ${req.userId}
-            ORDER BY r.date DESC NULLS LAST, r.id DESC
-            LIMIT 50
+            WITH latest AS (
+                SELECT 
+                    r.id,
+                    r.date,
+                    r.poids,
+                    r.creatinine,
+                    r.tension_systolique,
+                    r.tension_diastolique,
+                    r.temperature,
+                    r.glycemie,
+                    r.hemoglobine,
+                    r.douleur_greffon,
+                    r.frequence_cardiaque,
+                    r.tacrolimus_ng,
+                    r.everolimus_ng,
+                    u.id AS patient_id,
+                    u.prenom,
+                    u.nom,
+                    ROW_NUMBER() OVER (PARTITION BY u.id ORDER BY r.date DESC, r.id DESC) AS rn
+                FROM utilisateur u
+                JOIN dossier_medical d ON d.id_utilisateur = u.id
+                JOIN reponse r ON r.id_dossier_medical = d.id
+                WHERE u.id_utilisateur_medecin = ${req.userId}
+            )
+            SELECT * FROM latest WHERE rn = 1
+            ORDER BY date DESC NULLS LAST, id DESC
         `;
 
         const alerts = (rows || [])
             .map((row) => buildAlertFromResponse(row))
-            .filter(Boolean)
-            .slice(0, 30);
+            .filter(Boolean);
 
         res.json({ success: true, alerts });
     } catch (error) {
