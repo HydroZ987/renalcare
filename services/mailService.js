@@ -50,7 +50,7 @@ async function sendContactNotification(contact) {
 function getInscriptionLink(type) {
   // IMPORTANT : ici on met bien les URL que ton serveur sert
   // Dans app.js tu as : `/medecin/register` et `/patient/register`
-  const base = process.env.FRONTEND_BASE_URL || 'http://13.60.69.160:3000';
+  const base = process.env.FRONTEND_BASE_URL || 'https://prod.renalcare.click/';
   return type === 'medecin'
     ? `${base.replace(/\/$/, '')}/medecin/register`
     : `${base.replace(/\/$/, '')}/patient/register`;
