@@ -419,7 +419,9 @@ router.post('/:id/reponses', async (req, res) => {
 
     // Génération d'alerte médecin en cas de valeurs critiques
     try {
-      const alertMsg = buildCriticalAlertMessage(req.body);
+      const patientInfo = await sql`select prenom, nom from utilisateur where id = ${patientId} limit 1`;
+      const patientLabel = `${patientInfo?.[0]?.prenom || ''} ${patientInfo?.[0]?.nom || ''}`.trim();
+      const alertMsg = buildCriticalAlertMessage(req.body, patientLabel);
       if (alertMsg) {
         const medIdRows = await sql`select id_utilisateur_medecin from utilisateur where id = ${patientId} limit 1`;
         const medId = medIdRows?.[0]?.id_utilisateur_medecin;
@@ -450,7 +452,7 @@ router.post('/:id/reponses', async (req, res) => {
   }
 });
 
-function buildCriticalAlertMessage(body) {
+function buildCriticalAlertMessage(body, patientLabel = '') {
   const num = (v) => (v === null || v === undefined ? null : Number(v));
   const flags = [];
 
@@ -479,8 +481,8 @@ function buildCriticalAlertMessage(body) {
   if (eve !== null && eve > 8) flags.push('évérolimus toxique');
 
   if (!flags.length) return null;
-
-  return `ALERTE QUESTIONNAIRE: ${flags.join(' | ')}`;
+  const label = patientLabel ? ` - ${patientLabel}` : '';
+  return `ALERTE QUESTIONNAIRE${label}: ${flags.join(' | ')}`;
 }
 
 async function resolveDossierForPatient(patientId, requestedDossierId) {

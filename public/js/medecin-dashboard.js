@@ -70,6 +70,7 @@ let managePatientsSearchTerm = '';
 let patientSelectSearchTerm = '';
 let patientSelectRendered = false;
 let alertsCache = [];
+let alertsListBound = false;
 
 async function loadCriticalAlerts() {
   const alertsContainer = document.getElementById('alertsList');
@@ -77,6 +78,20 @@ async function loadCriticalAlerts() {
   const token = localStorage.getItem('auth_token');
 
   if (!alertsContainer) return;
+
+  // Bind one-time delegation to gérer le bouton de redirection vers le suivi
+  if (!alertsListBound) {
+    alertsListBound = true;
+    alertsContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action="go-suivi"]');
+      if (!btn) return;
+      const patientId = btn.dataset.patientId;
+      const patientName = btn.dataset.patientName;
+      if (patientId) {
+        goToSuiviPatient(patientId, patientName || 'Patient');
+      }
+    });
+  }
 
   try {
     const resp = await fetch('/api/medecin/alerts', {
@@ -96,13 +111,16 @@ async function loadCriticalAlerts() {
 
     alertsContainer.innerHTML = alertsCache.map((a) => {
       const dateText = a.date ? new Date(a.date).toLocaleDateString('fr-FR') : '';
+      const patientName = a.patient_name || 'Patient non spécifié';
+      const safeName = patientName.replace(/"/g, '&quot;');
       return `
         <div class="alert alert-warning">
           <span class="alert-icon">⚠️</span>
           <div class="alert-content">
-            <h4>Alerte questionnaire</h4>
+            <h4>Alerte questionnaire • ${patientName}</h4>
             <p>${a.message || 'Valeurs critiques détectées'} ${dateText ? '• ' + dateText : ''}</p>
           </div>
+          <button class="btn-primary" style="margin-left:auto; padding:6px 10px;" data-action="go-suivi" data-patient-id="${a.patient_id || ''}" data-patient-name="${safeName}">Voir le suivi</button>
         </div>
       `;
     }).join('');
