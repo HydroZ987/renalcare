@@ -1485,28 +1485,18 @@
                         </div>
 
                         <div class="search-bar">
-                            <input type="text" class="search-input" placeholder="Rechercher une ordonnance...">
-                            <button class="btn-primary">🔍 Rechercher</button>
+                            <input id="ordonnanceSearchInput" type="text" class="search-input" placeholder="Rechercher une ordonnance...">
+                            <button class="btn-primary" type="button">🔍 Rechercher</button>
                         </div>
 
-                        <div id="ordonnancesList">
-                            <div class="patient-item">
-                                <div class="patient-avatar">SM</div>
-                                <div class="patient-info">
-                                    <h4>Ordonnance - Sophie Martin</h4>
-                                    <p>15/09/2025 • Advagraf 5mg, Certican 0.75mg • Durée: 3 mois</p>
-                                </div>
-                                <button class="btn-primary" style="width: auto; padding: 8px 16px;">📄 Voir</button>
-                            </div>
+                        <div class="search-bar">
+                            <select id="ordoPatientSelect" class="search-input" style="padding: 10px 15px;" onchange="loadOrdonnancesForPatient()">
+                                <option value="">Sélectionnez un patient...</option>
+                            </select>
+                        </div>
 
-                            <div class="patient-item">
-                                <div class="patient-avatar">PM</div>
-                                <div class="patient-info">
-                                    <h4>Ordonnance - Pierre Moreau</h4>
-                                    <p>05/10/2025 • Traitement immunosuppresseur • Durée: 6 mois</p>
-                                </div>
-                                <button class="btn-primary" style="width: auto; padding: 8px 16px;">📄 Voir</button>
-                            </div>
+                        <div id="ordonnancesList" style="margin-top: 15px;">
+                            <p style="text-align: center; color: #666; padding: 40px;">Sélectionnez un patient pour voir ses ordonnances</p>
                         </div>
                     </div>
                 </div>
