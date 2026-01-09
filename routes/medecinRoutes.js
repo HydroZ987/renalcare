@@ -480,17 +480,39 @@ router.post('/patients/:id/traitements', (req, res) => {
     res.json({ success: true, message: `Traitement ajouté pour patient ${req.params.id}` });
 });
 
-// Alertes critiques liées aux questionnaires
+// Alertes critiques: basé sur les derniers questionnaires des patients du médecin
 router.get('/alerts', authenticateMedecin, async (req, res) => {
     try {
-        const alerts = await sql`
-            SELECT id, date, message
-            FROM messagerie
-            WHERE id_utilisateur = ${req.userId}
-            AND message ILIKE 'ALERTE%'
-            ORDER BY date DESC, id DESC
-            LIMIT 20
+        const rows = await sql`
+            SELECT 
+                r.id,
+                r.date,
+                r.poids,
+                r.creatinine,
+                r.tension_systolique,
+                r.tension_diastolique,
+                r.temperature,
+                r.glycemie,
+                r.hemoglobine,
+                r.douleur_greffon,
+                r.frequence_cardiaque,
+                r.tacrolimus_ng,
+                r.everolimus_ng,
+                u.id AS patient_id,
+                u.prenom,
+                u.nom
+            FROM utilisateur u
+            JOIN dossier_medical d ON d.id_utilisateur = u.id
+            JOIN reponse r ON r.id_dossier_medical = d.id
+            WHERE u.id_utilisateur_medecin = ${req.userId}
+            ORDER BY r.date DESC NULLS LAST, r.id DESC
+            LIMIT 50
         `;
+
+        const alerts = (rows || [])
+            .map((row) => buildAlertFromResponse(row))
+            .filter(Boolean)
+            .slice(0, 30);
 
         res.json({ success: true, alerts });
     } catch (error) {
@@ -498,5 +520,47 @@ router.get('/alerts', authenticateMedecin, async (req, res) => {
         res.status(500).json({ success: false, message: 'Erreur serveur' });
     }
 });
+
+function buildAlertFromResponse(row) {
+    const num = (v) => (v === null || v === undefined ? null : Number(v));
+    const flags = [];
+
+    const creat = num(row.creatinine);
+    const ts = num(row.tension_systolique);
+    const td = num(row.tension_diastolique);
+    const temp = num(row.temperature);
+    const gly = num(row.glycemie);
+    const hgb = num(row.hemoglobine);
+    const dg = num(row.douleur_greffon);
+    const fc = num(row.frequence_cardiaque);
+    const tac = num(row.tacrolimus_ng);
+    const eve = num(row.everolimus_ng);
+
+    if (creat !== null && creat > 150) flags.push('créatinine très élevée');
+    if (ts !== null && ts > 180) flags.push('tension systolique >180');
+    if (td !== null && td > 110) flags.push('tension diastolique >110');
+    if (temp !== null && temp > 38.5) flags.push('fièvre >38.5°C');
+    if (temp !== null && temp < 35) flags.push('hypothermie <35°C');
+    if (gly !== null && gly > 2.5) flags.push('glycémie >2.5 g/L');
+    if (gly !== null && gly < 0.5) flags.push('hypoglycémie <0.5 g/L');
+    if (hgb !== null && hgb < 8) flags.push('hémoglobine <8 g/dL');
+    if (dg !== null && dg >= 7) flags.push('douleur greffon >=7/10');
+    if (fc !== null && (fc > 120 || fc < 45)) flags.push('fréquence cardiaque critique');
+    if (tac !== null && (tac < 3 || tac > 7)) flags.push('tacrolimus hors cible');
+    if (eve !== null && eve > 8) flags.push('évérolimus toxique');
+
+    if (!flags.length) return null;
+
+    const patientName = `${row.prenom || ''} ${row.nom || ''}`.trim() || 'Patient';
+    const message = `ALERTE QUESTIONNAIRE - ${patientName}: ${flags.join(' | ')}`;
+
+    return {
+        id: row.id,
+        date: row.date,
+        message,
+        patient_name: patientName,
+        patient_id: row.patient_id
+    };
+}
 
 module.exports = router;

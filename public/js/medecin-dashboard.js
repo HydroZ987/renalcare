@@ -96,11 +96,12 @@ async function loadCriticalAlerts() {
 
     alertsContainer.innerHTML = alertsCache.map((a) => {
       const dateText = a.date ? new Date(a.date).toLocaleDateString('fr-FR') : '';
+      const patientName = a.patient_name || 'Patient non spécifié';
       return `
         <div class="alert alert-warning">
           <span class="alert-icon">⚠️</span>
           <div class="alert-content">
-            <h4>Alerte questionnaire</h4>
+            <h4>Alerte questionnaire • ${patientName}</h4>
             <p>${a.message || 'Valeurs critiques détectées'} ${dateText ? '• ' + dateText : ''}</p>
           </div>
         </div>
