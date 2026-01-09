@@ -202,6 +202,17 @@ router.get('/notifications', (req, res) => {
   }
 });
 
+// Support / SAV: retourne toutes les demandes de contact (inscription, question, etc.)
+router.get('/support-requests', (req, res) => {
+  try {
+    const requests = pendingRequestsStore.getAll() || [];
+    res.json({ success: true, requests });
+  } catch (err) {
+    console.error('Erreur support-requests:', err);
+    res.status(500).json({ success: false, error: 'Impossible de charger les tickets support.' });
+  }
+});
+
 // Télécharger le fichier brut de logs
 router.get('/logs/download', async (_req, res) => {
   try {

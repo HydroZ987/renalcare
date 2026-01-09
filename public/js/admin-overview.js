@@ -24,6 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
         loadLogs();
     }
 
+    // Précharger le support si l'onglet est actif
+    const supportPage = document.getElementById('page-support');
+    if (supportPage && supportPage.classList.contains('active')) {
+        loadSupportTickets();
+    }
+
     // Charger les notifications dès l'arrivée
     loadNotifications();
 });
@@ -152,6 +158,69 @@ function renderNotifications(items) {
             </div>
         </div>
     `).join('');
+}
+
+// Support / SAV
+async function loadSupportTickets() {
+    const list = document.getElementById('support-list');
+    const badge = document.getElementById('support-count');
+    if (!list) return;
+
+    list.innerHTML = `<div class="activity-item"><div class="activity-content"><div class="activity-title">Chargement...</div><div class="activity-details">Lecture des tickets support</div></div></div>`;
+
+    try {
+        const res = await fetch('/api/admin/support-requests');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Erreur support');
+
+        const requests = data.requests || [];
+        if (badge) badge.textContent = requests.length;
+
+        if (!requests.length) {
+            list.innerHTML = `<div class="activity-item"><div class="activity-content"><div class="activity-title">Aucun ticket</div><div class="activity-details">Aucune remontée utilisateur pour l'instant</div></div></div>`;
+            return;
+        }
+
+        const colorBySujet = (s) => {
+            switch (s) {
+                case 'inscription':
+                    return { color: '#2980b9', emoji: '🟦', label: 'Inscription' };
+                case 'question':
+                case 'question_generale':
+                case 'question_générale':
+                    return { color: '#27ae60', emoji: '🟢', label: 'Question générale' };
+                case 'question_medicale':
+                    return { color: '#8e44ad', emoji: '🟣', label: 'Question médicale' };
+                case 'probleme_connexion':
+                    return { color: '#e74c3c', emoji: '🔴', label: 'Connexion' };
+                case 'modification_compte':
+                    return { color: '#f39c12', emoji: '🟡', label: 'Compte' };
+                default:
+                    return { color: '#7f8c8d', emoji: '⚪', label: 'Autre' };
+            }
+        };
+
+        list.innerHTML = requests
+            .slice()
+            .reverse()
+            .map((r) => {
+                const meta = colorBySujet(r.sujet);
+                const created = r.createdAt ? new Date(r.createdAt).toLocaleString('fr-FR') : 'Récemment';
+                return `
+                <div class="activity-item" style="border-left-color: ${meta.color};">
+                    <div class="activity-icon" style="background: ${meta.color};">${meta.emoji}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${escapeHtml(meta.label)} - ${escapeHtml(r.prenom || '')} ${escapeHtml(r.nom || '')}</div>
+                        <div class="activity-details">${escapeHtml(r.message || '')}</div>
+                        <div class="activity-time">${escapeHtml(created)} • ${escapeHtml(r.email || '')}${r.telephone ? ' • ' + escapeHtml(r.telephone) : ''}</div>
+                    </div>
+                </div>`;
+            })
+            .join('');
+    } catch (err) {
+        console.error('Support:', err);
+        list.innerHTML = `<div class="activity-item"><div class="activity-content"><div class="activity-title">Erreur</div><div class="activity-details">${escapeHtml(err.message)}</div></div></div>`;
+    }
 }
 
 // Chargement des logs applicatifs
