@@ -117,7 +117,7 @@ app.use((req, res) => {
 
 // 🔹 Démarrage du serveur APRÈS la déclaration des routes
 app.listen(port, async () => {
-  console.log(`Serveur démarré sur http://51.21.250.236:${port}`);
+  console.log(`Serveur démarré sur https://prod.renalcare.click/`);
   console.log(`DATABASE_URL configurée: ${process.env.DATABASE_URL ? '✅' : '❌'}`);
 
   // Test de connexion à la base de données au démarrage
