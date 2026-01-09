@@ -72,7 +72,7 @@ function renderSummary(treatments) {
         <h4>${firstLine}</h4>
         <p>${dateText ? `${dateText} • ` : ''}${lines.slice(1, 3).join(' • ')}</p>
       </div>
-      <span class="treatment-status status-pending">Suivre</span>
+      <button class="treatment-status status-pending" style="cursor:pointer; border:none; outline:none;" onclick="window.location.href='/patient/treatment'">Suivre</button>
     </div>
   `;
 }

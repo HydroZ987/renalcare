@@ -86,6 +86,7 @@ async function loadPatientDashboard() {
 
 async function loadUpcomingAppointments(token) {
   const container = document.getElementById('upcomingAppointments');
+  const statRdv = document.getElementById('stat-rdv');
   if (!container) return;
 
   container.innerHTML = `
@@ -110,6 +111,7 @@ async function loadUpcomingAppointments(token) {
     }
 
     const rdvs = data.appointments || [];
+    if (statRdv) statRdv.textContent = rdvs.length;
     if (!rdvs.length) {
       container.innerHTML = `
         <div class="appointment-item">
@@ -145,6 +147,7 @@ async function loadUpcomingAppointments(token) {
     }).join('');
   } catch (err) {
     console.error('RDV patient:', err);
+    if (statRdv) statRdv.textContent = '—';
     container.innerHTML = `
       <div class="appointment-item">
         <div class="appointment-time">
@@ -231,7 +234,12 @@ function fillStats(stats = {}) {
 
   setText('stat-months', stats.months_post_greffe ?? '—');
   setText('stat-rdv', stats.rdv_count ?? '0');
-  setText('stat-questionnaires', stats.questionnaires_en_attente ?? '0');
+  const label = stats.next_questionnaire_label
+    || (stats.days_before_next_questionnaire === 0 ? "Aujourd'hui" : null)
+    || (stats.questionnaires_en_attente > 0
+      ? `${stats.questionnaires_en_attente} en attente`
+      : 'À jour');
+  setText('stat-questionnaires', label);
 }
 
 function fillInfos(info = {}) {
