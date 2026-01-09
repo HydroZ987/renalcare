@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Charger les patients récents sur le dashboard
   loadRecentPatientsOnDashboard();
 
+  // Charger les RDV d'aujourd'hui
+  loadTodayAppointments();
+
   // Alimenter le sélecteur de patients pour le suivi
   populatePatientSelect();
 
@@ -927,5 +930,70 @@ function selectOrdoPatient(patientId, patientName) {
   // Appeler la fonction loadOrdonnances qui est définie dans le HTML
   if (typeof loadOrdonnances === 'function') {
     loadOrdonnances(patientId);
+  }
+}
+
+// Charger les rendez-vous d'aujourd'hui
+async function loadTodayAppointments() {
+  const container = document.getElementById('todayAppointments');
+  const counterEl = document.getElementById('totalRdvToday');
+  
+  if (!container) return;
+
+  container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Chargement des RDV...</p>';
+
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      container.innerHTML = '<p style="text-align: center; color: #c33; padding: 20px;">Session expirée</p>';
+      return;
+    }
+
+    const resp = await fetch('/api/medecin/rendez-vous/today', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    const data = await resp.json();
+    
+    if (!resp.ok || !data.success) {
+      throw new Error(data.message || 'Erreur de chargement des RDV');
+    }
+
+    const rdvs = data.rendez_vous || [];
+    
+    // Mettre à jour le compteur
+    if (counterEl) {
+      counterEl.textContent = rdvs.length || '0';
+    }
+
+    if (rdvs.length === 0) {
+      container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Aucun rendez-vous aujourd\'hui</p>';
+      return;
+    }
+
+    // Afficher les RDV
+    container.innerHTML = rdvs.map(rdv => {
+      const patientName = rdv.patient_name || 'Patient inconnu';
+      const time = rdv.heure || '--:--';
+      const raison = rdv.raison || 'Consultation';
+      return `
+        <div class="appointment-item">
+          <div class="appointment-time">
+            <span>${time}</span>
+          </div>
+          <div class="appointment-details">
+            <h4>${patientName}</h4>
+            <p>${raison}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error('Erreur chargement RDV:', err);
+    container.innerHTML = '<p style="text-align: center; color: #c33; padding: 20px;">Erreur de chargement</p>';
+    if (counterEl) {
+      counterEl.textContent = '--';
+    }
   }
 }
