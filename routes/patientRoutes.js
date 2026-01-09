@@ -113,6 +113,15 @@ router.get('/:id/dashboard', authenticatePatient, async (req, res) => {
 
     let lastSuivi = null;
     let lastReponse = null;
+    let responses = [];
+    let questionnaireStats = {
+      completed: 0,
+      expected: 0,
+      missing: 0,
+      next_due_date: null,
+      next_due_label: null,
+      days_until_next: null,
+    };
 
     if (dossierId) {
       const suiviRows = await sql`
@@ -124,20 +133,23 @@ router.get('/:id/dashboard', authenticatePatient, async (req, res) => {
       `;
       lastSuivi = suiviRows.length ? suiviRows[0] : null;
 
-      const reponseRows = await sql`
+      responses = await sql`
         SELECT id, date
         FROM reponse
         WHERE id_dossier_medical = ${dossierId}
         ORDER BY date DESC, id DESC
-        LIMIT 1
       `;
-      lastReponse = reponseRows.length ? reponseRows[0] : null;
+      lastReponse = responses.length ? responses[0] : null;
     }
 
     const dateGreffe = lastSuivi?.date_greffe || dossier?.[0]?.date_creation || null;
     const monthsPostGreffe = dateGreffe
       ? Math.max(0, Math.floor((Date.now() - new Date(dateGreffe).getTime()) / (1000 * 60 * 60 * 24 * 30)))
       : null;
+
+    if (dateGreffe) {
+      questionnaireStats = computeQuestionnaireSchedule(dateGreffe, responses.map((r) => r.date));
+    }
 
     return res.json({
       success: true,
@@ -157,7 +169,11 @@ router.get('/:id/dashboard', authenticatePatient, async (req, res) => {
       stats: {
         months_post_greffe: monthsPostGreffe,
         rdv_count: 0,
-        questionnaires_en_attente: 0,
+        questionnaires_en_attente: questionnaireStats.missing,
+        questionnaires_realises: questionnaireStats.completed,
+        next_questionnaire_date: questionnaireStats.next_due_date,
+        next_questionnaire_label: questionnaireStats.next_due_label,
+        days_before_next_questionnaire: questionnaireStats.days_until_next,
         messages_non_lus: 0,
       },
       last_prescription: lastSuivi?.prescription || null,
@@ -283,7 +299,6 @@ router.post('/:id/questionnaires', async (req, res) => {
     height_cm,
     weight_kg,
     phone,
-    secu_number,
     address,
     metadata,
   } = req.body;
@@ -311,6 +326,77 @@ router.post('/:id/questionnaires', async (req, res) => {
     res.status(500).json({ error: 'Impossible d’enregistrer le questionnaire.' });
   }
 });
+
+// Calcule le prochain questionnaire attendu selon la date de greffe et l'historique des réponses
+function computeQuestionnaireSchedule(dateGreffe, responseDates = []) {
+  const start = new Date(dateGreffe);
+  if (Number.isNaN(start.getTime())) {
+    return {
+      completed: responseDates.length,
+      expected: 0,
+      missing: 0,
+      next_due_date: null,
+      next_due_label: 'Date de greffe manquante',
+      days_until_next: null,
+    };
+  }
+
+  const completed = responseDates.length;
+  const sortedDates = responseDates
+    .map((d) => new Date(d))
+    .filter((d) => !Number.isNaN(d.getTime()))
+    .sort((a, b) => a - b);
+
+  const today = new Date();
+  const ref = today;
+
+  let due = new Date(start);
+  let expected = 0;
+
+  const diffDays = (a, b) => Math.floor((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
+
+  const nextInterval = (currentDue) => {
+    const daysFromGreffe = diffDays(currentDue, start);
+    if (daysFromGreffe < 7) return 1; // quotidien la première semaine
+    if (daysFromGreffe < 90) return 15; // tous les 15 jours jusqu'à 3 mois
+    if (daysFromGreffe < 270) return 30; // tous les mois jusqu'à 9 mois
+    return 90; // ensuite tous les 3 mois
+  };
+
+  // Génère les échéances jusqu'à dépasser aujourd'hui
+  while (due <= ref) {
+    expected += 1;
+    const interval = nextInterval(due);
+    due = new Date(due.getTime() + interval * 24 * 60 * 60 * 1000);
+  }
+
+  const missing = Math.max(0, expected - completed);
+  const daysUntilNext = diffDays(due, today);
+  let nextLabel = '—';
+  if (daysUntilNext === 0) nextLabel = "Aujourd'hui";
+  else if (daysUntilNext === 1) nextLabel = 'Dans 1 jour';
+  else if (daysUntilNext > 1 && daysUntilNext < 30) nextLabel = `Dans ${daysUntilNext} jours`;
+  else if (daysUntilNext >= 30 && daysUntilNext < 90) {
+    const months = Math.round(daysUntilNext / 30);
+    nextLabel = `Dans ${months} mois`;
+  } else if (daysUntilNext >= 90) {
+    const months = Math.round(daysUntilNext / 30);
+    nextLabel = `Dans ${months} mois`;
+  }
+
+  if (missing > 0) {
+    nextLabel = `${nextLabel} • ${missing} questionnaire(s) en retard`.trim();
+  }
+
+  return {
+    completed,
+    expected,
+    missing,
+    next_due_date: due,
+    next_due_label: nextLabel,
+    days_until_next: daysUntilNext,
+  };
+}
 
 router.get('/:id/questionnaires', async (req, res) => {
   try {

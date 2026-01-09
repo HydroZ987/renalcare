@@ -234,7 +234,12 @@ function fillStats(stats = {}) {
 
   setText('stat-months', stats.months_post_greffe ?? '—');
   setText('stat-rdv', stats.rdv_count ?? '0');
-  setText('stat-questionnaires', stats.questionnaires_en_attente ?? '0');
+  const label = stats.next_questionnaire_label
+    || (stats.days_before_next_questionnaire === 0 ? "Aujourd'hui" : null)
+    || (stats.questionnaires_en_attente > 0
+      ? `${stats.questionnaires_en_attente} en attente`
+      : 'À jour');
+  setText('stat-questionnaires', label);
 }
 
 function fillInfos(info = {}) {
