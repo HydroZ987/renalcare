@@ -565,4 +565,40 @@ function buildAlertFromResponse(row) {
     };
 }
 
+// GET rendez-vous d'aujourd'hui pour le médecin
+router.get('/rendez-vous/today', authenticateMedecin, async (req, res) => {
+    try {
+        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        
+        const rdvs = await sql`
+            SELECT 
+                rv.id,
+                rv.date,
+                rv.heure,
+                rv.raison,
+                u.prenom,
+                u.nom
+            FROM rendez_vous rv
+            JOIN utilisateur u ON rv.id_patient = u.id
+            WHERE rv.id_medecin = ${req.userId}
+            AND DATE(rv.date) = ${today}
+            ORDER BY rv.heure ASC
+        `;
+
+        res.json({
+            success: true,
+            rendez_vous: (rdvs || []).map(rdv => ({
+                id: rdv.id,
+                date: rdv.date,
+                heure: rdv.heure,
+                raison: rdv.raison,
+                patient_name: `${rdv.prenom} ${rdv.nom}`
+            }))
+        });
+    } catch (error) {
+        console.error('Erreur chargement RDV today:', error);
+        res.status(500).json({ success: false, message: 'Erreur serveur' });
+    }
+});
+
 module.exports = router;
