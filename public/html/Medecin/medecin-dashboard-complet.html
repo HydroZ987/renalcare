@@ -1480,15 +1480,15 @@
                                 ordonnance</button>
                         </div>
 
-                        <div class="search-bar">
-                            <input id="ordonnanceSearchInput" type="text" class="search-input" placeholder="Rechercher une ordonnance...">
-                            <button class="btn-primary" type="button">🔍 Rechercher</button>
+                        <div class="search-bar" style="gap: 12px; flex-wrap: wrap;">
+                            <input type="text" id="ordoPatientSearch" class="search-input"
+                                placeholder="Rechercher un patient (nom, téléphone, email)..." style="flex:1 1 260px;">
                         </div>
 
-                        <div class="search-bar">
-                            <select id="ordoPatientSelect" class="search-input" style="padding: 10px 15px;" onchange="loadOrdonnancesForPatient()">
-                                <option value="">Sélectionnez un patient...</option>
-                            </select>
+                        <div class="search-bar" style="gap: 12px; flex-wrap: wrap;">
+                            <div id="ordoPatientList" class="search-results"
+                                style="width:100%; max-height: 260px; overflow-y: auto; display: grid; gap: 8px;"></div>
+                            <select id="ordoPatientSelectHidden" style="display:none;"></select>
                         </div>
 
                         <div id="ordonnancesList" style="margin-top: 15px;">

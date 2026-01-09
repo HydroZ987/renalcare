@@ -858,3 +858,116 @@ function preventBackNavigation(expectedRole) {
     }
   });
 }
+
+// Gestion de la recherche des patients pour les ordonnances
+let allPatientsForOrdonnances = [];
+let selectedOrdoPatientId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialiser la recherche des patients pour ordonnances
+  const ordoPatientSearchInput = document.getElementById('ordoPatientSearch');
+  if (ordoPatientSearchInput) {
+    ordoPatientSearchInput.addEventListener('input', searchOrdoPatients);
+    loadAllPatientsForOrdonnances();
+  }
+});
+
+async function loadAllPatientsForOrdonnances() {
+  try {
+    const response = await fetch('/api/medecin/patients', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error('Erreur lors du chargement des patients');
+
+    const data = await response.json();
+    allPatientsForOrdonnances = data.patients || [];
+  } catch (error) {
+    console.error('Erreur:', error);
+  }
+}
+
+function searchOrdoPatients(e) {
+  const query = e.target.value.toLowerCase();
+  const resultsContainer = document.getElementById('ordoPatientList');
+
+  if (!query) {
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  const filtered = allPatientsForOrdonnances.filter(patient => {
+    const fullName = (patient.nom + ' ' + patient.prenom).toLowerCase();
+    const email = (patient.email || '').toLowerCase();
+    const phone = (patient.telephone || '').toLowerCase();
+    return fullName.includes(query) || email.includes(query) || phone.includes(query);
+  });
+
+  resultsContainer.innerHTML = filtered.map(patient => `
+    <div class="patient-result" onclick="selectOrdoPatient('${patient.id}', '${patient.prenom} ${patient.nom}')">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div>
+          <strong>${patient.prenom} ${patient.nom}</strong>
+          <div style="font-size: 12px; color: #999;">${patient.email || 'N/A'}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectOrdoPatient(patientId, patientName) {
+  selectedOrdoPatientId = patientId;
+  document.getElementById('ordoPatientSearch').value = patientName;
+  document.getElementById('ordoPatientList').innerHTML = '';
+  loadOrdonnancesForPatient(patientId);
+}
+
+async function loadOrdonnancesForPatient(patientId) {
+  try {
+    const response = await fetch(`/api/medecin/ordonnances/${patientId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error('Erreur lors du chargement des ordonnances');
+
+    const data = await response.json();
+    displayOrdonnances(data.ordonnances || []);
+  } catch (error) {
+    console.error('Erreur:', error);
+    document.getElementById('ordonnancesList').innerHTML = '<p style="color: #c33;">Erreur lors du chargement des ordonnances</p>';
+  }
+}
+
+function displayOrdonnances(ordonnances) {
+  const container = document.getElementById('ordonnancesList');
+  
+  if (!ordonnances || ordonnances.length === 0) {
+    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Aucune ordonnance pour ce patient</p>';
+    return;
+  }
+
+  container.innerHTML = ordonnances.map(ordo => `
+    <div class="card" style="margin-bottom: 15px; padding: 15px; border-left: 4px solid #8e44ad;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h4 style="margin: 0 0 5px 0;">${ordo.titre || 'Ordonnance'}</h4>
+          <p style="margin: 0; font-size: 13px; color: #666;">Date: ${new Date(ordo.date_creation).toLocaleDateString('fr-FR')}</p>
+        </div>
+        <button class="btn-secondary" onclick="viewOrdonnance('${ordo.id}')">Voir</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function viewOrdonnance(ordoId) {
+  console.log('Afficher ordonnance:', ordoId);
+  // À implémenter: modal ou navigation pour voir les détails
+}
